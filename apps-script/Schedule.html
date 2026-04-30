@@ -399,8 +399,15 @@ function computeSectionStats(rows) {
 // ===== HEADER =====
 
 function navigateTo(page) {
-  const baseUrl = window.location.href.split('?')[0];
-  window.location.href = baseUrl + '?page=' + page;
+  var baseUrl = window.location.href.split('?')[0];
+  var newUrl = baseUrl + '?page=' + page;
+  // Try to navigate the top frame (works outside iframe)
+  // Inside Google Sites iframe, this may be blocked - Sites handles nav via its own pages
+  try {
+    window.location.href = newUrl;
+  } catch(e) {
+    window.location.replace(newUrl);
+  }
 }
 window.navigateTo = navigateTo;
 
