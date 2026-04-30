@@ -211,8 +211,8 @@ const FALLBACK_SETTINGS = {
 
 let settings;
 try {
-  const parsed = JSON.parse(<?!= JSON.stringify(JSON.parse(settings)) ?>);
-  settings = (parsed && parsed.program_name) ? parsed : FALLBACK_SETTINGS;
+  settings = <?!= settings ?>;
+  if (!settings || !settings.program_name) settings = FALLBACK_SETTINGS;
 } catch(e) {
   settings = FALLBACK_SETTINGS;
 }
@@ -228,7 +228,7 @@ document.documentElement.style.setProperty('--pgcis', settings.pgcis_color || '#
 // ===== DATA =====
 let scheduleData;
 try {
-  scheduleData = JSON.parse(<?!= JSON.stringify(pageData) ?>);
+  scheduleData = <?!= pageData ?>;
 } catch(e) {
   scheduleData = null;
 }
@@ -263,10 +263,29 @@ const FALLBACK_CONSTRUCTION = [
   { Name: 'L6 Handover & Delivery', Owner: 'Matt Striffler', Start: '2027-10-01', End: '2027-11-09', Status: 'Not Started', Progress: '0', Notes: 'First delivery target: Nov 9, 2027', '#': '9' }
 ];
 
-const pgcisRows = (scheduleData && scheduleData.pgcisSchedule && scheduleData.pgcisSchedule.length > 0)
+// Normalize Sheet column names (lowercase/underscored) to renderer property names (capitalized)
+function normalizeRow(row) {
+  return {
+    Name: row.Name || row.name || '',
+    Owner: row.Owner || row.owner || '',
+    Workstream: row.Workstream || row.workstream || '',
+    Phase: row.Phase || row.phase || '',
+    Start: row.Start || row.start_date || '',
+    End: row.End || row.end_date || '',
+    Status: row.Status || row.status || 'Not Started',
+    Progress: row.Progress || row.progress || '0',
+    Notes: row.Notes || row.notes || '',
+    'Doc Link': row['Doc Link'] || row.document_url || '',
+    '#': row['#'] || row.order || '0'
+  };
+}
+
+const rawPgcis = (scheduleData && scheduleData.pgcisSchedule && scheduleData.pgcisSchedule.length > 0)
   ? scheduleData.pgcisSchedule : FALLBACK_PGCIS;
-const constructionRows = (scheduleData && scheduleData.constructionSchedule && scheduleData.constructionSchedule.length > 0)
+const rawConstruction = (scheduleData && scheduleData.constructionSchedule && scheduleData.constructionSchedule.length > 0)
   ? scheduleData.constructionSchedule : FALLBACK_CONSTRUCTION;
+const pgcisRows = rawPgcis.map(normalizeRow);
+const constructionRows = rawConstruction.map(normalizeRow);
 
 // ===== VIEW RANGES =====
 const VIEW_RANGES = {
