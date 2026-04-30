@@ -7,6 +7,7 @@ that theme into future client Sites.
 
 ## Brand Assets
 
+- Full common header image: `assets/google-sites-header-beale-floyd.png`
 - Logo for dark header: `assets/beale-logo-dark-header.png`
 - Editable logo source: `assets/beale-logo-dark-header.svg`
 - Logo treatment: white Beale wordmark, Beale green windmill
@@ -41,6 +42,9 @@ that theme into future client Sites.
 
 ## Page Structure
 
+- Preferred header approach: insert `assets/google-sites-header-beale-floyd.png`
+  at the top of each Google Sites page or use it as the page header image when the
+  crop behavior is acceptable.
 - Home: embed Apps Script URL without a page parameter, or with `?page=directory`
 - Program Schedule: embed Apps Script URL with `?page=schedule`
 - Future pages: add Sites-level navigation pages first, then embed purpose-built
