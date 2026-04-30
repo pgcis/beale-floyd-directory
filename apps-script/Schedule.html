@@ -399,14 +399,22 @@ function computeSectionStats(rows) {
 // ===== HEADER =====
 
 function navigateTo(page) {
-  var baseUrl = window.location.href.split('?')[0];
-  var newUrl = baseUrl + '?page=' + page;
-  // Try to navigate the top frame (works outside iframe)
-  // Inside Google Sites iframe, this may be blocked - Sites handles nav via its own pages
-  try {
-    window.location.href = newUrl;
-  } catch(e) {
-    window.location.replace(newUrl);
+  // Google Sites page URLs
+  var sitePages = {
+    'directory': '/pgcis.com/beale-floyd-kc/home',
+    'schedule': '/pgcis.com/beale-floyd-kc/program-schedule'
+  };
+
+  // Check if we're inside a Google Sites iframe
+  var inIframe = (window.self !== window.top);
+
+  if (inIframe && sitePages[page]) {
+    // Navigate the parent Google Sites frame
+    window.top.location.href = 'https://sites.google.com' + sitePages[page];
+  } else {
+    // Direct Apps Script URL (not in iframe)
+    var baseUrl = window.location.href.split('?')[0];
+    window.location.href = baseUrl + '?page=' + page;
   }
 }
 window.navigateTo = navigateTo;
