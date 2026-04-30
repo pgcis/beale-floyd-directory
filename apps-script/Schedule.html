@@ -398,26 +398,7 @@ function computeSectionStats(rows) {
 
 // ===== HEADER =====
 
-function navigateTo(page) {
-  // Google Sites page URLs
-  var sitePages = {
-    'directory': '/pgcis.com/beale-floyd-kc/home',
-    'schedule': '/pgcis.com/beale-floyd-kc/program-schedule'
-  };
-
-  // Check if we're inside a Google Sites iframe
-  var inIframe = (window.self !== window.top);
-
-  if (inIframe && sitePages[page]) {
-    // Navigate the parent Google Sites frame
-    window.top.location.href = 'https://sites.google.com' + sitePages[page];
-  } else {
-    // Direct Apps Script URL (not in iframe)
-    var baseUrl = window.location.href.split('?')[0];
-    window.location.href = baseUrl + '?page=' + page;
-  }
-}
-window.navigateTo = navigateTo;
+// No navigateTo function needed - using target="_top" on <a> tags
 
 function renderHeader() {
   const logoFilter = settings.client_logo_invert === 'true' ? 'filter:brightness(0) invert(1);' : '';
@@ -438,8 +419,8 @@ function renderHeader() {
     </div>
     <div class="page-nav">
       <div class="page-nav-inner">
-        <a href="#" onclick="navigateTo('directory');return false;"  class="page-nav-item ${currentPage === 'directory' ? 'active' : ''}" style="${currentPage === 'directory' ? 'border-bottom-color:var(--accent);' : ''}">Program Directory</a>
-        <a href="#" onclick="navigateTo('schedule');return false;"  class="page-nav-item ${currentPage === 'schedule' ? 'active' : ''}" style="${currentPage === 'schedule' ? 'border-bottom-color:var(--accent);' : ''}">Program Schedule</a>
+        <a href="https://sites.google.com/pgcis.com/beale-floyd-kc/home" target="_top"  class="page-nav-item ${currentPage === 'directory' ? 'active' : ''}" style="${currentPage === 'directory' ? 'border-bottom-color:var(--accent);' : ''}">Program Directory</a>
+        <a href="https://sites.google.com/pgcis.com/beale-floyd-kc/program-schedule" target="_top"  class="page-nav-item ${currentPage === 'schedule' ? 'active' : ''}" style="${currentPage === 'schedule' ? 'border-bottom-color:var(--accent);' : ''}">Program Schedule</a>
         <div class="page-nav-item inactive">Performance Dashboards</div>
       </div>
     </div>`;
