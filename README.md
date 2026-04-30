@@ -11,9 +11,10 @@ client-facing portal code and contact rendering logic.
 - Program Directory: default route, or `?page=directory`
 - Program Schedule: `?page=schedule`
 
-When the Apps Script page is loaded directly, the widget-level navigation uses the
-`?page=` routes above. When the widget is embedded inside Google Sites, the internal
-navigation is hidden and users should use the Google Sites page navigation.
+When the Apps Script page is loaded directly, the widget-level header/navigation uses
+the `?page=` routes above. When the widget is embedded inside Google Sites, the
+Apps Script header and internal navigation are hidden so Google Sites owns the portal
+header, logo, and page navigation.
 
 ## Active Apps Script Files
 

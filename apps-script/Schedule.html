@@ -26,6 +26,14 @@
   .header-right { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
   .header-credit { color: #ffffff; font-size: 12px; font-weight: 500; }
   .header-pgcis-logo { height: 54px; width: auto; }
+  .client-logo-wrap {
+    position: relative; display: inline-block; height: 55px; aspect-ratio: 232 / 85;
+  }
+  .client-logo-img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  .client-logo-img.inverted { filter: brightness(0) invert(1); }
+  .client-logo-accent {
+    position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+  }
 
   /* Page navigation bar */
   .page-nav {
@@ -421,12 +429,37 @@ function renderPageNav() {
     </div>`;
 }
 
-function renderHeader() {
+function shouldPreserveClientLogoAccent() {
+  const clientName = (settings.client_name || '').toLowerCase();
+  return settings.client_logo_invert === 'true' && clientName.indexOf('beale') !== -1;
+}
+
+function renderClientLogo() {
+  if (!settings.client_logo_url) {
+    return `<div style="color:#fff;font-size:18px;font-weight:700;">${settings.client_name}</div>`;
+  }
+
+  if (shouldPreserveClientLogoAccent()) {
+    return `
+      <span class="client-logo-wrap" aria-label="${settings.client_name}">
+        <img src="${settings.client_logo_url}" alt="" class="client-logo-img inverted">
+        <svg class="client-logo-accent" viewBox="0 0 232 85" aria-hidden="true" focusable="false">
+          <path d="M227.684 0L194.127 33.5992H146.621V38.618H192.639V84.6367H197.658V37.1292L231.257 3.53005L227.684 0Z" fill="#BCF100"/>
+        </svg>
+      </span>`;
+  }
+
   const logoFilter = settings.client_logo_invert === 'true' ? 'filter:brightness(0) invert(1);' : '';
+  return `<img src="${settings.client_logo_url}" alt="${settings.client_name}" style="height:55px;${logoFilter}">`;
+}
+
+function renderHeader() {
+  if (isEmbeddedInGoogleSites()) return '';
+
   return `
     <div class="header" style="background:linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);">
       <div class="header-left">
-        ${settings.client_logo_url ? `<img src="${settings.client_logo_url}" alt="${settings.client_name}" style="height:55px;${logoFilter}">` : `<div style="color:#fff;font-size:18px;font-weight:700;">${settings.client_name}</div>`}
+        ${renderClientLogo()}
       </div>
       <div class="header-center">
         <div class="header-title">${settings.program_name}</div>
