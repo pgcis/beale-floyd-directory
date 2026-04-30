@@ -37,3 +37,10 @@ For a new client deployment, change only `SHEET_ID` in
 
 This widget renders team contact information. Access is controlled by the Apps Script
 web app deployment and Google Sites sharing settings, not by static hosting.
+
+## Google Sites Theme
+
+The Google Sites header, logo, and navigation should be configured in Sites rather
+than inside the embedded Apps Script widget. See
+`docs/google-sites-theme-beale-floyd.md` for the Beale theme settings and logo
+asset references.
