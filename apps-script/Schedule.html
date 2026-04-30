@@ -397,6 +397,13 @@ function computeSectionStats(rows) {
 }
 
 // ===== HEADER =====
+
+function navigateTo(page) {
+  const baseUrl = window.location.href.split('?')[0];
+  window.location.href = baseUrl + '?page=' + page;
+}
+window.navigateTo = navigateTo;
+
 function renderHeader() {
   const logoFilter = settings.client_logo_invert === 'true' ? 'filter:brightness(0) invert(1);' : '';
   return `
@@ -416,8 +423,8 @@ function renderHeader() {
     </div>
     <div class="page-nav">
       <div class="page-nav-inner">
-        <a href="?page=directory" class="page-nav-item ${currentPage === 'directory' ? 'active' : ''}" style="${currentPage === 'directory' ? 'border-bottom-color:var(--accent);' : ''}">Program Directory</a>
-        <a href="?page=schedule" class="page-nav-item ${currentPage === 'schedule' ? 'active' : ''}" style="${currentPage === 'schedule' ? 'border-bottom-color:var(--accent);' : ''}">Program Schedule</a>
+        <a href="#" onclick="navigateTo('directory');return false;"  class="page-nav-item ${currentPage === 'directory' ? 'active' : ''}" style="${currentPage === 'directory' ? 'border-bottom-color:var(--accent);' : ''}">Program Directory</a>
+        <a href="#" onclick="navigateTo('schedule');return false;"  class="page-nav-item ${currentPage === 'schedule' ? 'active' : ''}" style="${currentPage === 'schedule' ? 'border-bottom-color:var(--accent);' : ''}">Program Schedule</a>
         <div class="page-nav-item inactive">Performance Dashboards</div>
       </div>
     </div>`;
