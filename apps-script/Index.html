@@ -112,7 +112,9 @@
   .deliverable-row:last-of-type { border-bottom: none; }
   .deliverable-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .deliverable-status.not-started { background: #e0e4e8; }
-  .deliverable-status.in-progress { background: #ff9800; }
+  .deliverable-status.in-progress { background: #2196F3; }
+  .deliverable-status.at-risk { background: #ff9800; }
+  .deliverable-status.delayed { background: #f44336; }
   .deliverable-status.complete { background: #4caf50; }
   .deliverable-name { flex: 1; color: #445566; }
   .deliverable-phase {
@@ -472,6 +474,8 @@ function renderAccordionItem(ws, data) {
   function statusClass(status) {
     if (status === 'Complete') return 'complete';
     if (status === 'In Progress') return 'in-progress';
+    if (status === 'At Risk') return 'at-risk';
+    if (status === 'Delayed') return 'delayed';
     return 'not-started';
   }
 
@@ -526,6 +530,8 @@ function renderAccordionItem(ws, data) {
           <div class="deliverables-legend">
             <div class="legend-item"><div class="deliverable-status not-started"></div> Not Started</div>
             <div class="legend-item"><div class="deliverable-status in-progress"></div> In Progress</div>
+            <div class="legend-item"><div class="deliverable-status at-risk"></div> At Risk</div>
+            <div class="legend-item"><div class="deliverable-status delayed"></div> Delayed</div>
             <div class="legend-item"><div class="deliverable-status complete"></div> Complete</div>
           </div>
         </div>` : ''}
