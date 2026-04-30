@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floyd KC - Program Directory</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #333; }
+
+  :root {
+    --primary: #1a2332;
+    --accent: #BCF100;
+    --secondary: #2c3e50;
+    --pgcis: #2e7d32;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    padding: 28px 32px;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  }
+  .header-left { display: flex; align-items: center; justify-content: flex-start; }
+  .header-center { display: flex; justify-content: center; }
+  .header-title { color: #fff; font-size: 22px; font-weight: 700; text-align: center; }
+  .header-subtitle { color: #8899aa; font-size: 15px; margin-top: 2px; }
+
+  /* Page navigation bar */
+  .page-nav {
+    background: #fff; border-bottom: 2px solid #e8ecf0;
+    padding: 14px 32px; max-width: 960px; margin: 0 auto;
+  }
+  .page-nav-inner {
+    max-width: 960px; margin: 0 auto;
+    display: flex; align-items: center; gap: 24px;
+  }
+  .page-nav-item {
+    font-size: 14px; font-weight: 600; color: var(--primary); padding: 6px 0;
+    border-bottom: 3px solid transparent; cursor: pointer;
+    text-decoration: none;
+  }
+  .page-nav-item.active {
+    border-bottom-color: var(--accent);
+  }
+  .page-nav-item.inactive {
+    color: #99aabb; font-weight: 500; border-bottom: 3px solid transparent;
+    cursor: default;
+  }
+  .page-nav-item:not(.inactive):hover {
+    color: #667788; border-bottom-color: #e0e4e8;
+  }
+  .page-nav-item.active:hover {
+    color: var(--primary); border-bottom-color: var(--accent);
+  }
+  .header-right { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .header-credit { color: #ffffff; font-size: 12px; font-weight: 500; }
+  .header-pgcis-logo { height: 54px; width: auto; }
+
+  .container { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+
+  .accordion-item {
+    background: #fff; border-radius: 8px; margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden;
+    border: 1px solid #e8ecf0;
+  }
+  .accordion-header {
+    padding: 16px 20px; cursor: pointer; display: flex; align-items: center;
+    transition: background 0.15s;
+  }
+  .accordion-header:hover { background: #f8f9fa; }
+  .accordion-header.active { background: #f0f4f8; border-bottom: 1px solid #e8ecf0; }
+  .accordion-arrow {
+    width: 20px; color: var(--primary); font-size: 12px; flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .accordion-header.active .accordion-arrow { transform: rotate(90deg); }
+  .accordion-ws-name { flex: 1; font-weight: 600; color: var(--primary); font-size: 14px; }
+  .accordion-meta { display: flex; gap: 28px; font-size: 13px; }
+  .accordion-meta-label { color: #99aabb; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .accordion-meta-name { color: var(--primary); font-weight: 600; }
+  .accordion-meta-name.tbd { color: #f57f17; font-weight: 500; font-style: italic; }
+
+  .accordion-body { padding: 20px 20px 24px 20px; display: none; }
+  .accordion-body.open { display: block; }
+
+  /* SECTION DIVIDERS */
+  .section-divider {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--primary); margin: 24px 0 12px 0; padding-bottom: 8px;
+    border-bottom: 2px solid #e0e4e8; font-weight: 700;
+  }
+  .section-divider:first-child { margin-top: 0; }
+
+  .scope-box {
+    background: #f0f4f8; border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0;
+    padding: 16px 20px; margin-bottom: 0;
+  }
+  .scope-header {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--primary); font-weight: 700; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .scope-header-icon { font-size: 14px; }
+  .scope-text { color: #445566; font-size: 13px; line-height: 1.7; }
+  .proposal-ref {
+    margin-top: 10px; padding-top: 8px; border-top: 1px solid #dde3ea;
+    color: #8899aa; font-size: 11px; font-style: italic;
+  }
+
+  .deliverables-box {
+    background: #fafbfc; border: 1px solid #e8ecf0; border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .deliverables-header {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--primary); font-weight: 700; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .deliverables-count {
+    font-size: 11px; color: #8899aa; font-weight: 400; text-transform: none; letter-spacing: 0;
+  }
+  .deliverable-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid #f0f2f4; font-size: 13px;
+  }
+  .deliverable-row:last-of-type { border-bottom: none; }
+  .deliverable-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .deliverable-status.not-started { background: #e0e4e8; }
+  .deliverable-status.in-progress { background: #2196F3; }
+  .deliverable-status.at-risk { background: #ff9800; }
+  .deliverable-status.delayed { background: #f44336; }
+  .deliverable-status.complete { background: #4caf50; }
+  .deliverable-name { flex: 1; color: #445566; }
+  .deliverable-phase {
+    font-size: 10px; color: #99aabb; background: #f0f2f4; padding: 2px 8px;
+    border-radius: 8px; white-space: nowrap;
+  }
+  .deliverables-legend {
+    display: flex; gap: 16px; margin-top: 10px; padding-top: 8px;
+    border-top: 1px solid #f0f2f4; font-size: 11px; color: #99aabb;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+
+  .team-section { margin-bottom: 14px; }
+  .team-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--primary); font-weight: 700; margin-bottom: 8px;
+    padding-bottom: 4px; border-bottom: 2px solid var(--primary);
+    display: inline-block;
+  }
+  .team-label.pgcis { color: var(--pgcis); border-color: var(--pgcis); }
+  .team-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+
+  .lead-card {
+    background: #f8f9fa; border: 1px solid #e0e4e8; border-radius: 8px;
+    padding: 12px 16px; cursor: pointer; transition: all 0.15s; min-width: 200px;
+  }
+  .lead-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .lead-card .name { font-weight: 600; color: var(--primary); font-size: 14px; }
+  .lead-card .title { color: #667788; font-size: 12px; margin-top: 2px; }
+  .lead-card .role-badge {
+    display: inline-block; font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 2px 8px; border-radius: 10px;
+    margin-top: 6px; font-weight: 700;
+  }
+  .lead-card .role-badge.lead { background: var(--primary); color: #fff; }
+  .lead-card .role-badge.co-lead { background: #34495e; color: #fff; }
+
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill {
+    background: #f0f2f4; border: 1px solid #dde1e6; border-radius: 16px;
+    padding: 5px 12px; font-size: 12px; color: #445566; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pill:hover { background: #e4e8ec; border-color: #c0c8d0; }
+  .pill.tbd {
+    background: #fff8e1; border-color: #ffe082; color: #f57f17; font-style: italic;
+    cursor: default;
+  }
+
+  .contact-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4); display: flex; align-items: center;
+    justify-content: center; z-index: 100;
+  }
+  .contact-card {
+    background: #fff; border-radius: 12px; padding: 28px 32px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15); max-width: 380px; width: 100%; position: relative;
+  }
+  .contact-card .org-badge {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    padding: 3px 10px; border-radius: 10px; display: inline-block; margin-bottom: 12px; font-weight: 700;
+  }
+  .contact-card .org-badge.beale { background: var(--primary); color: #fff; }
+  .contact-card .org-badge.pgcis { background: var(--pgcis); color: #fff; }
+  .contact-card .contact-name { font-size: 20px; font-weight: 700; color: var(--primary); }
+  .contact-card .contact-title { font-size: 14px; color: #667788; margin-top: 4px; }
+  .contact-card .contact-info { margin-top: 16px; }
+  .contact-card .contact-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid #f0f2f4; font-size: 13px;
+  }
+  .contact-card .contact-row:last-child { border-bottom: none; }
+  .contact-card .contact-icon { color: #99aabb; width: 16px; text-align: center; }
+  .contact-card .contact-row a { color: var(--primary); text-decoration: none; }
+  .contact-card .contact-row a:hover { text-decoration: underline; }
+  .contact-card .close-btn {
+    position: absolute; top: 16px; right: 20px; background: none; border: none;
+    font-size: 20px; color: #99aabb; cursor: pointer;
+  }
+
+  .footer { text-align: center; padding: 24px; color: #99aabb; font-size: 11px; }
+
+  .loading { text-align: center; padding: 60px; color: #99aabb; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="loading">Loading program directory...</div>
+</div>
+
+<script>
+// ============================================================
+// SETTINGS (server-provided via Apps Script)
+// ============================================================
+
+const FALLBACK_SETTINGS = {
+  program_name: 'Floyd KC Data Center Development Program',
+  client_name: 'Beale Infrastructure',
+  client_logo_url: '',
+  pgcis_logo_url: 'https://lh3.googleusercontent.com/d/1SvJPW5By4yRtWjnfirQbBrWUCk4noo2c',
+  primary_color: '#1a2332',
+  accent_color: '#BCF100',
+  secondary_color: '#2c3e50',
+  pgcis_color: '#2e7d32',
+  footer_text: 'Beale Infrastructure + PACHYDERM GLOBAL Critical Infrastructure Services',
+  confidentiality_notice: 'Confidential - For authorized personnel only',
+  client_logo_invert: 'true'
+};
+
+let settings;
+try {
+  const parsed = JSON.parse(<?!= JSON.stringify(JSON.parse(settings)) ?>);
+  settings = (parsed && parsed.program_name) ? parsed : FALLBACK_SETTINGS;
+} catch(e) {
+  settings = FALLBACK_SETTINGS;
+}
+
+const currentPage = '<?!= currentPage ?>';
+
+// Apply CSS custom properties from settings
+document.documentElement.style.setProperty('--primary', settings.primary_color || '#1a2332');
+document.documentElement.style.setProperty('--accent', settings.accent_color || '#BCF100');
+document.documentElement.style.setProperty('--secondary', settings.secondary_color || '#2c3e50');
+document.documentElement.style.setProperty('--pgcis', settings.pgcis_color || '#2e7d32');
+
+// ============================================================
+// DATA LAYER (server-provided via Apps Script)
+// ============================================================
+
+// Fallback data used when Sheet fetch fails (or Sheet ID is placeholder)
+const FALLBACK_DATA = {
+  workstreams: [
+    { order: 1, name: 'Commercial / Contract', scope: 'Contract management, commercial terms, and legal coordination.', proposal_ref: '' },
+    { order: 2, name: 'QCx Program (QA/QC, Commissioning, Quality in Action)', scope: 'Commissioning program development (L0-L6 framework, hold/witness points, approval gates), equipment-specific procedure and checklist library (L1-L6), equipment labeling, QR and Cx tagging standard (developed as part of the master specification, with project-specific addendums), deficiency management system, commissioning plan template, Quality in Action workshops with GC and trade partners, on-site QA/QC oversight, CxA performance monitoring, critical witness events, and level transition readiness assessments.', proposal_ref: '1.1, 1.6, 1.8, 2.2, 2.3, 2.4' },
+    { order: 3, name: 'Electrical Engineering / Design Review', scope: 'Electrical distribution review (MV/LV architecture, redundancy, protection coordination), short circuit coordination study (SCCS) and arc flash study review, commissionability review, and design milestone review comments (SD/DD/CD/IFC).', proposal_ref: '1.2, 2.1' },
+    { order: 4, name: 'Mechanical / D2C Cooling / Design Review', scope: 'D2C liquid cooling system review (CDU, piping, leak detection, fluid management, flush and fill, TAB procedures), mechanical spec and BOD QC review, SPOF analysis, digital twin and thermodynamic model development, and FOAK equipment startup witnessing.', proposal_ref: '1.2, 1.7, 2.3' },
+    { order: 5, name: 'Controls / BMS / DCIM / Design Review', scope: 'Controls, BMS, EPMS, and SCADA architecture review, sequence of operations (SoO) review and gap analysis, controls commissioning planning, and design milestone review comments.', proposal_ref: '1.2, 2.1' },
+    { order: 6, name: 'GC Contract / Supply Chain', scope: 'GC contract review (Cx requirements, holdback language, turnover package definitions), CxA contract development (scope, deliverables, acceptance criteria, performance standards), tenant agreement Cx provisions, CFCI procurement coordination, vendor coordination, and supply chain management.', proposal_ref: '1.3' },
+    { order: 7, name: 'Schedule / Program Management', scope: 'Cx schedule and resource plan development, critical path and long-lead dependency identification, load bank strategy, ongoing schedule health monitoring, compression risk flagging, level transition prerequisite verification, resource adequacy checks, and change management advisory.', proposal_ref: '1.4, 2.4' },
+    { order: 8, name: 'Document Control, Reporting, and Technology Enablement', scope: 'Document management across shared platforms, Cx tracking platform evaluation and configuration, reporting templates and KPI definitions, real-time dashboards and heat maps, monthly executive advisory reports, Pareto analyses and data analytics, individual performance report cards, and technology platform integration to support commissioning workflows and field operations.', proposal_ref: '1.5, 2.5' },
+    { order: 9, name: 'Safety / EHS', scope: 'Safety program alignment with Beale\'s community acceptance and EHS standards, field safety protocols, and integration of safety requirements into Quality in Action workshops and on-site oversight.', proposal_ref: 'embedded in 1.8, 2.2' }
+  ],
+  team: [
+    { name: 'Erik Stockglausner', org: 'PGCIS', title: 'CEO / Principal Advisor', email: 'erik@pgcis.com', phone: '', role_description: 'Commercial relationship, customer integration, QCx program strategy' },
+    { name: 'Tyler Dunlap', org: 'PGCIS', title: 'Cx Practice Lead & Training Director', email: 'tylerd@pgcis.com', phone: '', role_description: 'QCx standard development, training curriculum, Quality in Action program' },
+    { name: 'Kaenon Stockglausner', org: 'PGCIS', title: 'MCx Specialist and OR', email: 'kaenon@pgcis.com', phone: '(469) 999-8691', role_description: 'Field-level QA/QC, mechanical commissioning, D2C cooling' },
+    { name: 'Tarif Abboushi PE', org: 'PGCIS', title: 'Senior Mission Critical Facilities Executive', email: 'tarif@pgcis.com', phone: '(713) 249-0101', role_description: 'Electrical engineering design review, PE authority' },
+    { name: 'Jim Doucette', org: 'PGCIS', title: 'Project Executive / Owner\'s Representative', email: 'jim@pgcis.com', phone: '', role_description: 'GC contract management, schedule, construction execution' },
+    { name: 'Royce Praytor', org: 'PGCIS', title: 'Cx OR / Controls Subject Expert', email: 'royce.p@pgcis.com', phone: '', role_description: 'BAS/BMS controls SME, QA/QC oversight' },
+    { name: 'Mohamed Ben-Salah', org: 'PGCIS', title: 'Mechanical Commissioning Lead', email: 'mohamed@pgcis.com', phone: '', role_description: 'Mechanical design review, D2C cooling, EMEA hyperscale Cx' },
+    { name: 'Muhammed Kurt', org: 'PGCIS', title: 'Data Center Design Manager & Electrical Cx SME', email: 'muhammed.kurt@pgcis.com', phone: '', role_description: 'Safety/EHS lead, HV/MV electrical systems, EMEA' },
+    { name: 'Benton Peret', org: 'PGCIS', title: 'Data Center Design Manager & Advisor', email: 'benton@pgcis.com', phone: '', role_description: 'Document control, reporting, technology enablement, tools strategy' },
+    { name: 'Herman Brumme', org: 'PGCIS', title: 'Cx Owner\'s Representative', email: 'skip@pgcis.com', phone: '', role_description: 'Anchor/final pressure-test reviewer, electrical Cx' },
+    { name: 'Bhavitha Chennupati', org: 'PGCIS', title: 'Cx Project Coordinator', email: 'bhavi@pgcis.com', phone: '(346) 387-5421', role_description: 'Document control support, electrical peer review' },
+    { name: 'Matt Striffler', org: 'Beale', title: 'SVP, Construction', email: 'mstriffler@bealeinfra.com', phone: '(319) 321-6377', role_description: 'Primary POC - Cx program owner. Delivery, schedule, execution.' },
+    { name: 'Alfonso Portillo', org: 'Beale', title: 'SVP, Design & Innovation', email: 'aportillo@bealeinfra.com', phone: '', role_description: 'Engineering team lead, commissioning challenges, D2C cooling design' },
+    { name: 'Scott Robertson', org: 'Beale', title: 'Chief Delivery Officer', email: 'srobertson@bealeinfra.com', phone: '', role_description: 'Delivery oversight, escalation' },
+    { name: 'Kevin Klucsarits', org: 'Beale', title: 'VP Engineering (Offsite Infrastructure)', email: 'kklucsarits@bealeinfra.com', phone: '', role_description: 'Water, power, fiber, mechanical/electrical BOD' },
+    { name: 'Roger Portillo', org: 'Beale', title: 'Procurement', email: 'rportillo@bealeinfra.com', phone: '', role_description: 'OEM finalist list, vendor coordination' },
+    { name: 'Salvador Garcia', org: 'Beale', title: 'Program Manager', email: 'sgarcia@bealeinfra.com', phone: '', role_description: 'Design through construction support, Procore admin' },
+    { name: 'Valeriya Alvarez', org: 'Beale', title: 'Project Coordination (Legal/Contracts)', email: 'valvarez@partners.bealeinfra.com', phone: '', role_description: 'Contract/legal support' }
+  ],
+  assignments: [
+    { workstream: 'Commercial / Contract', person: 'Erik Stockglausner', role: 'Lead', note: '' },
+    { workstream: 'Commercial / Contract', person: 'Benton Peret', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Commercial / Contract', person: 'Matt Striffler', role: 'Lead', note: '' },
+    { workstream: 'Commercial / Contract', person: 'Valeriya Alvarez', role: 'Support', note: '' },
+    { workstream: 'Commercial / Contract', person: 'Scott Robertson', role: 'Support', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Tyler Dunlap', role: 'Lead', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Kaenon Stockglausner', role: 'Co-Lead', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Erik Stockglausner', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Muhammed Kurt', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Mohamed Ben-Salah', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Benton Peret', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Royce Praytor', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Jim Doucette', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Herman Brumme', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Matt Striffler', role: 'Lead', note: '' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Tarif Abboushi PE', role: 'Lead', note: '' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Tyler Dunlap', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Muhammed Kurt', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Bhavitha Chennupati', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Kaenon Stockglausner', role: 'Peer Reviewer', note: 'SCCS' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Herman Brumme', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', person: 'Mohamed Ben-Salah', role: 'Lead', note: '' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', person: 'Kaenon Stockglausner', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', person: 'Royce Praytor', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', person: 'Erik Stockglausner', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', person: 'Royce Praytor', role: 'Lead', note: '' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', person: 'Mohamed Ben-Salah', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', person: 'Muhammed Kurt', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', person: 'Kaenon Stockglausner', role: 'Peer Reviewer', note: '' },
+    { workstream: 'GC Contract / Supply Chain', person: 'Jim Doucette', role: 'Lead', note: '' },
+    { workstream: 'GC Contract / Supply Chain', person: 'Tarif Abboushi PE', role: 'Peer Reviewer', note: '' },
+    { workstream: 'GC Contract / Supply Chain', person: 'Royce Praytor', role: 'Peer Reviewer', note: '' },
+    { workstream: 'GC Contract / Supply Chain', person: 'Benton Peret', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Schedule / Program Management', person: 'Jim Doucette', role: 'Lead', note: '' },
+    { workstream: 'Schedule / Program Management', person: 'Benton Peret', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Schedule / Program Management', person: 'Tarif Abboushi PE', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', person: 'Benton Peret', role: 'Lead', note: '' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', person: 'Tyler Dunlap', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', person: 'Mohamed Ben-Salah', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', person: 'Bhavitha Chennupati', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', person: 'Erik Stockglausner', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Safety / EHS', person: 'Muhammed Kurt', role: 'Lead', note: '' },
+    { workstream: 'Safety / EHS', person: 'Tyler Dunlap', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Safety / EHS', person: 'Benton Peret', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Safety / EHS', person: 'Jim Doucette', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Safety / EHS', person: 'Royce Praytor', role: 'Peer Reviewer', note: '' }
+  ],
+  deliverables: [
+    { workstream: 'Commercial / Contract', deliverable: 'Contract Review Memoranda (GC, CxA, Tenant)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Commercial / Contract', deliverable: 'Risk Matrix for Contract Gaps with Redlines', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Beale Commissioning Specification', phase: 'Phase 1', status: 'In Progress' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Procedure/Checklist Library (L1-L6)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Equipment Labeling, QR & Cx Tagging Standard', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Deficiency Management System', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Commissioning Plan Template', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Quality Program Workshop Materials', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'CxA Performance Assessments', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Level Transition Readiness Assessments', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Electrical Engineering / Design Review', deliverable: 'Spec/BOD QC Review Comments (Electrical)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Electrical Engineering / Design Review', deliverable: 'SPOF Analysis Report (Electrical)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Electrical Engineering / Design Review', deliverable: 'Design Milestone Review Comments (SD/DD/CD/IFC)', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', deliverable: 'Spec/BOD QC Review Comments (Mechanical/D2C)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', deliverable: 'SPOF Analysis Report (Mechanical)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', deliverable: 'Digital Twin & Thermodynamic Model', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', deliverable: 'FOAK Equipment Startup Witness Reports', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', deliverable: 'Spec/BOD QC Review Comments (Controls/BMS)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', deliverable: 'SoO Review and Gap Analysis', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', deliverable: 'Design Milestone Review Comments (Controls)', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'GC Contract / Supply Chain', deliverable: 'Contract Review Memoranda (GC, CxA, Tenant)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'GC Contract / Supply Chain', deliverable: 'CxA Contract Development', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Schedule / Program Management', deliverable: 'Cx Schedule & Resource Plan', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Schedule / Program Management', deliverable: 'Load Bank Strategy Memo', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Cx Platform Configuration', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Reporting Templates & KPIs', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Dashboard & Heat Map Access', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Monthly Executive Advisory Reports', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Pareto Analyses & Data Analytics', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Individual Performance Report Cards', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Safety / EHS', deliverable: 'Safety Program Alignment Review', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Safety / EHS', deliverable: 'Field Safety Protocols', phase: 'Phase 1', status: 'Not Started' }
+  ]
+};
+
+// Sheet data provided by Apps Script server-side
+
+async function loadAllData() {
+  // Data is injected server-side by Apps Script
+  const serverData = <?!= pageData ?>;
+  if (serverData && serverData.workstreams && serverData.workstreams.length > 0) {
+    return serverData;
+  }
+  console.warn('Server data empty, using fallback');
+  return FALLBACK_DATA;
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+
+// Global reference to loaded data for contact popups
+let directoryData = null;
+
+function escapeAttr(str) {
+  return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function renderHeader() {
+  const logoFilter = settings.client_logo_invert === 'true' ? 'filter:brightness(0) invert(1);' : '';
+  return `
+    <div class="header" style="background:linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);">
+      <div class="header-left">
+        ${settings.client_logo_url ? `<img src="${settings.client_logo_url}" alt="${settings.client_name}" style="height:55px;${logoFilter}">` : `<div style="color:#fff;font-size:18px;font-weight:700;">${settings.client_name}</div>`}
+      </div>
+      <div class="header-center">
+        <div class="header-title">${settings.program_name}</div>
+      </div>
+      <div class="header-right">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <img src="${settings.pgcis_logo_url}" alt="PGCIS" class="header-pgcis-logo">
+          <div class="header-credit">Powered by PACHYDERM GLOBAL</div>
+        </div>
+      </div>
+    </div>
+    <div class="page-nav">
+      <div class="page-nav-inner">
+        <a href="?page=directory" class="page-nav-item ${currentPage === 'directory' ? 'active' : ''}" style="${currentPage === 'directory' ? 'border-bottom-color:var(--accent);' : ''}">Program Directory</a>
+        <a href="?page=schedule" class="page-nav-item ${currentPage === 'schedule' ? 'active' : ''}" style="${currentPage === 'schedule' ? 'border-bottom-color:var(--accent);' : ''}">Program Schedule</a>
+        <div class="page-nav-item inactive">Performance Dashboards</div>
+      </div>
+    </div>`;
+}
+
+function renderFooter() {
+  return `<div class="footer">
+    Floyd KC Program | ${settings.footer_text}<br>
+    <span style="font-size:10px;color:#bbb;">${settings.confidentiality_notice}</span>
+  </div>`;
+}
+
+function getLeadsForOrg(data, workstreamName, org) {
+  return data.assignments.filter(a =>
+    a.workstream === workstreamName &&
+    (a.role === 'Lead' || a.role === 'Co-Lead')
+  ).map(a => {
+    const person = data.team.find(t => t.name === a.person && t.org === org);
+    return person ? { ...person, assignmentRole: a.role, note: a.note } : null;
+  }).filter(Boolean);
+}
+
+function getSupportForOrg(data, workstreamName, org) {
+  return data.assignments.filter(a =>
+    a.workstream === workstreamName &&
+    (a.role === 'Peer Reviewer' || a.role === 'Support')
+  ).map(a => {
+    const person = data.team.find(t => t.name === a.person && t.org === org);
+    return person ? { ...person, note: a.note } : null;
+  }).filter(Boolean);
+}
+
+function showContact(name) {
+  if (!directoryData) return;
+  const person = directoryData.team.find(t => t.name === name);
+  if (!person) return;
+
+  const orgClass = person.org === 'Beale' ? 'beale' : 'pgcis';
+  const orgLabel = person.org === 'Beale' ? 'BEALE INFRASTRUCTURE' : 'PGCIS';
+
+  const html = `
+    <div class="contact-overlay" onclick="if(event.target===this)this.remove()">
+      <div class="contact-card">
+        <button class="close-btn" onclick="this.closest('.contact-overlay').remove()">&times;</button>
+        <div class="org-badge ${orgClass}">${orgLabel}</div>
+        <div class="contact-name">${person.name}</div>
+        <div class="contact-title">${person.title}</div>
+        <div class="contact-info">
+          ${person.email ? `<div class="contact-row"><div class="contact-icon">&#9993;</div><a href="mailto:${person.email}">${person.email}</a></div>` : ''}
+          ${person.phone ? `<div class="contact-row"><div class="contact-icon">&#9742;</div><a href="tel:${person.phone.replace(/[^+\d]/g, '')}">${person.phone}</a></div>` : ''}
+          ${person.role_description ? `<div class="contact-row"><div class="contact-icon">&#9881;</div><div>${person.role_description}</div></div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+// Expose globally for onclick handlers
+window.showContact = showContact;
+
+function renderLeadCard(person) {
+  const badgeClass = person.assignmentRole === 'Co-Lead' ? 'co-lead' : 'lead';
+  const noteText = person.note ? ` (${person.note})` : '';
+  return `
+    <div class="lead-card" onclick="showContact('${escapeAttr(person.name)}')">
+      <div class="name">${person.name}${noteText}</div>
+      <div class="title">${person.title}</div>
+      <div class="role-badge ${badgeClass}">${person.assignmentRole}</div>
+    </div>`;
+}
+
+function renderPill(person) {
+  const noteText = person.note ? ` (${person.note})` : '';
+  return `<div class="pill" onclick="showContact('${escapeAttr(person.name)}')">${person.name}${noteText}</div>`;
+}
+
+function renderAccordionItem(ws, data) {
+  const bealeLeads = getLeadsForOrg(data, ws.name, 'Beale');
+  const pgcisLeads = getLeadsForOrg(data, ws.name, 'PGCIS');
+  const bealeSupport = getSupportForOrg(data, ws.name, 'Beale');
+  const pgcisSupport = getSupportForOrg(data, ws.name, 'PGCIS');
+  const wsDeliverables = data.deliverables.filter(d => d.workstream === ws.name);
+  const completeCount = wsDeliverables.filter(d => d.status === 'Complete').length;
+
+  // Header lead names
+  const bealeLeadName = bealeLeads.length > 0
+    ? bealeLeads.map(l => l.name).join(' + ')
+    : 'TBD';
+  const pgcisLeadName = pgcisLeads.length > 0
+    ? pgcisLeads.map(l => l.name).join(' + ')
+    : 'TBD';
+  const bealeNameClass = bealeLeads.length > 0 ? 'accordion-meta-name' : 'accordion-meta-name tbd';
+  const pgcisNameClass = pgcisLeads.length > 0 ? 'accordion-meta-name' : 'accordion-meta-name tbd';
+
+  // Beale TBD pills
+  let bealeTbdPills = '';
+  if (bealeLeads.length === 0) {
+    bealeTbdPills = '<div class="pill tbd">TBD - Beale to designate Lead</div>';
+  }
+  if (bealeSupport.length === 0 && bealeLeads.length > 0) {
+    bealeTbdPills = '<div class="pill tbd">TBD - Beale to designate</div>';
+  }
+  if (bealeLeads.length === 0 && bealeSupport.length === 0) {
+    bealeTbdPills += '<div class="pill tbd">TBD - Beale to designate Support</div>';
+  }
+
+  // Deliverable status class
+  function statusClass(status) {
+    if (status === 'Complete') return 'complete';
+    if (status === 'In Progress') return 'in-progress';
+    if (status === 'At Risk') return 'at-risk';
+    if (status === 'Delayed') return 'delayed';
+    return 'not-started';
+  }
+
+  return `
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="this.classList.toggle('active');this.nextElementSibling.classList.toggle('open');">
+        <div class="accordion-arrow">&#9654;</div>
+        <div class="accordion-ws-name">${ws.name}</div>
+        <div class="accordion-meta">
+          <div><div class="accordion-meta-label">Beale Lead</div><div class="${bealeNameClass}">${bealeLeadName}</div></div>
+          <div><div class="accordion-meta-label">PGCIS Lead</div><div class="${pgcisNameClass}">${pgcisLeadName}</div></div>
+        </div>
+      </div>
+      <div class="accordion-body">
+        <!-- Responsible Parties -->
+        <div class="team-section">
+          <div class="team-label">Beale Infrastructure</div>
+          ${bealeLeads.length > 0 ? `<div class="team-grid">${bealeLeads.map(renderLeadCard).join('')}</div>` : ''}
+          <div class="pills">
+            ${bealeSupport.map(renderPill).join('')}
+            ${bealeTbdPills}
+          </div>
+        </div>
+        <div class="team-section">
+          <div class="team-label pgcis">PGCIS</div>
+          ${pgcisLeads.length > 0 ? `<div class="team-grid">${pgcisLeads.map(renderLeadCard).join('')}</div>` : ''}
+          <div class="pills">${pgcisSupport.map(renderPill).join('')}</div>
+        </div>
+
+        <!-- Scope -->
+        <div class="section-divider">Work-stream Scope</div>
+        <div class="scope-box">
+          <div class="scope-text">${ws.scope}</div>
+          ${ws.proposal_ref ? `<div class="proposal-ref">Proposal Reference: ${ws.proposal_ref}</div>` : ''}
+        </div>
+
+        <!-- Deliverables -->
+        ${wsDeliverables.length > 0 ? `
+        <div class="section-divider">Deliverables</div>
+        <div class="deliverables-box">
+          <div class="deliverables-header">
+            <span></span>
+            <span class="deliverables-count">${completeCount} of ${wsDeliverables.length} complete</span>
+          </div>
+          ${wsDeliverables.map(d => `
+            <div class="deliverable-row">
+              <div class="deliverable-status ${statusClass(d.status)}"></div>
+              <div class="deliverable-name">${d.deliverable}</div>
+              <div class="deliverable-phase">${d.phase}</div>
+            </div>
+          `).join('')}
+          <div class="deliverables-legend">
+            <div class="legend-item"><div class="deliverable-status not-started"></div> Not Started</div>
+            <div class="legend-item"><div class="deliverable-status in-progress"></div> In Progress</div>
+            <div class="legend-item"><div class="deliverable-status at-risk"></div> At Risk</div>
+            <div class="legend-item"><div class="deliverable-status delayed"></div> Delayed</div>
+            <div class="legend-item"><div class="deliverable-status complete"></div> Complete</div>
+          </div>
+        </div>` : ''}
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+async function init() {
+  const app = document.getElementById('app');
+
+  try {
+    const data = await loadAllData();
+    directoryData = data;
+
+    const sortedWorkstreams = [...data.workstreams].sort((a, b) => Number(a.order) - Number(b.order));
+
+    app.innerHTML = `
+      ${renderHeader()}
+      <div class="container">
+        ${sortedWorkstreams.map(ws => renderAccordionItem(ws, data)).join('')}
+      </div>
+      ${renderFooter()}`;
+  } catch (error) {
+    app.innerHTML = '<div style="text-align:center;padding:60px;color:#cc0000;">Error loading directory. Please refresh or contact benton@pgcis.com.</div>';
+    console.error('Directory load error:', error);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
