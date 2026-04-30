@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floyd KC - Program Directory</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #333; }
+
+  .header {
+    background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+    padding: 28px 32px;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  }
+  .header-left { display: flex; align-items: center; justify-content: flex-start; }
+  .header-center { display: flex; justify-content: center; }
+  .header-title { color: #fff; font-size: 22px; font-weight: 700; text-align: center; }
+  .header-subtitle { color: #8899aa; font-size: 15px; margin-top: 2px; }
+
+  /* Page navigation bar */
+  .page-nav {
+    background: #fff; border-bottom: 2px solid #e8ecf0;
+    padding: 14px 32px; max-width: 960px; margin: 0 auto;
+  }
+  .page-nav-inner {
+    max-width: 960px; margin: 0 auto;
+    display: flex; align-items: center; gap: 24px;
+  }
+  .page-nav-item {
+    font-size: 14px; font-weight: 600; color: #1a2332; padding: 6px 0;
+    border-bottom: 3px solid #BCF100; cursor: pointer;
+  }
+  .page-nav-item.inactive {
+    color: #99aabb; font-weight: 500; border-bottom: 3px solid transparent;
+    cursor: pointer;
+  }
+  .page-nav-item.inactive:hover {
+    color: #667788; border-bottom-color: #e0e4e8;
+  }
+  .header-right { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .header-credit { color: #8899aa; font-size: 11px; font-weight: 500; }
+  .header-pgcis-logo { height: 54px; width: auto; }
+
+  .container { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+
+  .accordion-item {
+    background: #fff; border-radius: 8px; margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden;
+    border: 1px solid #e8ecf0;
+  }
+  .accordion-header {
+    padding: 16px 20px; cursor: pointer; display: flex; align-items: center;
+    transition: background 0.15s;
+  }
+  .accordion-header:hover { background: #f8f9fa; }
+  .accordion-header.active { background: #f0f4f8; border-bottom: 1px solid #e8ecf0; }
+  .accordion-arrow {
+    width: 20px; color: #1a2332; font-size: 12px; flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .accordion-header.active .accordion-arrow { transform: rotate(90deg); }
+  .accordion-ws-name { flex: 1; font-weight: 600; color: #1a2332; font-size: 14px; }
+  .accordion-meta { display: flex; gap: 28px; font-size: 13px; }
+  .accordion-meta-label { color: #99aabb; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .accordion-meta-name { color: #1a2332; font-weight: 600; }
+  .accordion-meta-name.tbd { color: #f57f17; font-weight: 500; font-style: italic; }
+
+  .accordion-body { padding: 20px 20px 24px 20px; display: none; }
+  .accordion-body.open { display: block; }
+
+  /* SECTION DIVIDERS */
+  .section-divider {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: #1a2332; margin: 24px 0 12px 0; padding-bottom: 8px;
+    border-bottom: 2px solid #e0e4e8; font-weight: 700;
+  }
+  .section-divider:first-child { margin-top: 0; }
+
+  .scope-box {
+    background: #f0f4f8; border-left: 4px solid #1a2332; border-radius: 0 8px 8px 0;
+    padding: 16px 20px; margin-bottom: 0;
+  }
+  .scope-header {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: #1a2332; font-weight: 700; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .scope-header-icon { font-size: 14px; }
+  .scope-text { color: #445566; font-size: 13px; line-height: 1.7; }
+  .proposal-ref {
+    margin-top: 10px; padding-top: 8px; border-top: 1px solid #dde3ea;
+    color: #8899aa; font-size: 11px; font-style: italic;
+  }
+
+  .deliverables-box {
+    background: #fafbfc; border: 1px solid #e8ecf0; border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .deliverables-header {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: #1a2332; font-weight: 700; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .deliverables-count {
+    font-size: 11px; color: #8899aa; font-weight: 400; text-transform: none; letter-spacing: 0;
+  }
+  .deliverable-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid #f0f2f4; font-size: 13px;
+  }
+  .deliverable-row:last-of-type { border-bottom: none; }
+  .deliverable-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .deliverable-status.not-started { background: #e0e4e8; }
+  .deliverable-status.in-progress { background: #ff9800; }
+  .deliverable-status.complete { background: #4caf50; }
+  .deliverable-name { flex: 1; color: #445566; }
+  .deliverable-phase {
+    font-size: 10px; color: #99aabb; background: #f0f2f4; padding: 2px 8px;
+    border-radius: 8px; white-space: nowrap;
+  }
+  .deliverables-legend {
+    display: flex; gap: 16px; margin-top: 10px; padding-top: 8px;
+    border-top: 1px solid #f0f2f4; font-size: 11px; color: #99aabb;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+
+  .team-section { margin-bottom: 14px; }
+  .team-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: #1a2332; font-weight: 700; margin-bottom: 8px;
+    padding-bottom: 4px; border-bottom: 2px solid #1a2332;
+    display: inline-block;
+  }
+  .team-label.pgcis { color: #2e7d32; border-color: #2e7d32; }
+  .team-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+
+  .lead-card {
+    background: #f8f9fa; border: 1px solid #e0e4e8; border-radius: 8px;
+    padding: 12px 16px; cursor: pointer; transition: all 0.15s; min-width: 200px;
+  }
+  .lead-card:hover { border-color: #1a2332; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .lead-card .name { font-weight: 600; color: #1a2332; font-size: 14px; }
+  .lead-card .title { color: #667788; font-size: 12px; margin-top: 2px; }
+  .lead-card .role-badge {
+    display: inline-block; font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 2px 8px; border-radius: 10px;
+    margin-top: 6px; font-weight: 700;
+  }
+  .lead-card .role-badge.lead { background: #1a2332; color: #fff; }
+  .lead-card .role-badge.co-lead { background: #34495e; color: #fff; }
+
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill {
+    background: #f0f2f4; border: 1px solid #dde1e6; border-radius: 16px;
+    padding: 5px 12px; font-size: 12px; color: #445566; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pill:hover { background: #e4e8ec; border-color: #c0c8d0; }
+  .pill.tbd {
+    background: #fff8e1; border-color: #ffe082; color: #f57f17; font-style: italic;
+    cursor: default;
+  }
+
+  .contact-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4); display: flex; align-items: center;
+    justify-content: center; z-index: 100;
+  }
+  .contact-card {
+    background: #fff; border-radius: 12px; padding: 28px 32px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15); max-width: 380px; width: 100%; position: relative;
+  }
+  .contact-card .org-badge {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    padding: 3px 10px; border-radius: 10px; display: inline-block; margin-bottom: 12px; font-weight: 700;
+  }
+  .contact-card .org-badge.beale { background: #1a2332; color: #fff; }
+  .contact-card .org-badge.pgcis { background: #2e7d32; color: #fff; }
+  .contact-card .contact-name { font-size: 20px; font-weight: 700; color: #1a2332; }
+  .contact-card .contact-title { font-size: 14px; color: #667788; margin-top: 4px; }
+  .contact-card .contact-info { margin-top: 16px; }
+  .contact-card .contact-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid #f0f2f4; font-size: 13px;
+  }
+  .contact-card .contact-row:last-child { border-bottom: none; }
+  .contact-card .contact-icon { color: #99aabb; width: 16px; text-align: center; }
+  .contact-card .contact-row a { color: #1a2332; text-decoration: none; }
+  .contact-card .contact-row a:hover { text-decoration: underline; }
+  .contact-card .close-btn {
+    position: absolute; top: 16px; right: 20px; background: none; border: none;
+    font-size: 20px; color: #99aabb; cursor: pointer;
+  }
+
+  .footer { text-align: center; padding: 24px; color: #99aabb; font-size: 11px; }
+
+  .loading { text-align: center; padding: 60px; color: #99aabb; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="loading">Loading program directory...</div>
+</div>
+
+<script>
+// ============================================================
+// DATA LAYER (server-provided via Apps Script)
+// ============================================================
+
+// Fallback data used when Sheet fetch fails (or Sheet ID is placeholder)
+const FALLBACK_DATA = {
+  workstreams: [
+    { order: 1, name: 'Commercial / Contract', scope: 'Contract management, commercial terms, and legal coordination.', proposal_ref: '' },
+    { order: 2, name: 'QCx Program (QA/QC, Commissioning, Quality in Action)', scope: 'Commissioning program development (L0-L6 framework, hold/witness points, approval gates), equipment-specific procedure and checklist library (L1-L6), equipment labeling, QR and Cx tagging standard (developed as part of the master specification, with project-specific addendums), deficiency management system, commissioning plan template, Quality in Action workshops with GC and trade partners, on-site QA/QC oversight, CxA performance monitoring, critical witness events, and level transition readiness assessments.', proposal_ref: '1.1, 1.6, 1.8, 2.2, 2.3, 2.4' },
+    { order: 3, name: 'Electrical Engineering / Design Review', scope: 'Electrical distribution review (MV/LV architecture, redundancy, protection coordination), short circuit coordination study (SCCS) and arc flash study review, commissionability review, and design milestone review comments (SD/DD/CD/IFC).', proposal_ref: '1.2, 2.1' },
+    { order: 4, name: 'Mechanical / D2C Cooling / Design Review', scope: 'D2C liquid cooling system review (CDU, piping, leak detection, fluid management, flush and fill, TAB procedures), mechanical spec and BOD QC review, SPOF analysis, digital twin and thermodynamic model development, and FOAK equipment startup witnessing.', proposal_ref: '1.2, 1.7, 2.3' },
+    { order: 5, name: 'Controls / BMS / DCIM / Design Review', scope: 'Controls, BMS, EPMS, and SCADA architecture review, sequence of operations (SoO) review and gap analysis, controls commissioning planning, and design milestone review comments.', proposal_ref: '1.2, 2.1' },
+    { order: 6, name: 'GC Contract / Supply Chain', scope: 'GC contract review (Cx requirements, holdback language, turnover package definitions), CxA contract development (scope, deliverables, acceptance criteria, performance standards), tenant agreement Cx provisions, CFCI procurement coordination, vendor coordination, and supply chain management.', proposal_ref: '1.3' },
+    { order: 7, name: 'Schedule / Program Management', scope: 'Cx schedule and resource plan development, critical path and long-lead dependency identification, load bank strategy, ongoing schedule health monitoring, compression risk flagging, level transition prerequisite verification, resource adequacy checks, and change management advisory.', proposal_ref: '1.4, 2.4' },
+    { order: 8, name: 'Document Control, Reporting, and Technology Enablement', scope: 'Document management across shared platforms, Cx tracking platform evaluation and configuration, reporting templates and KPI definitions, real-time dashboards and heat maps, monthly executive advisory reports, Pareto analyses and data analytics, individual performance report cards, and technology platform integration to support commissioning workflows and field operations.', proposal_ref: '1.5, 2.5' },
+    { order: 9, name: 'Safety / EHS', scope: 'Safety program alignment with Beale\'s community acceptance and EHS standards, field safety protocols, and integration of safety requirements into Quality in Action workshops and on-site oversight.', proposal_ref: 'embedded in 1.8, 2.2' }
+  ],
+  team: [
+    { name: 'Erik Stockglausner', org: 'PGCIS', title: 'CEO / Principal Advisor', email: 'erik@pgcis.com', phone: '', role_description: 'Commercial relationship, customer integration, QCx program strategy' },
+    { name: 'Tyler Dunlap', org: 'PGCIS', title: 'Cx Practice Lead & Training Director', email: 'tylerd@pgcis.com', phone: '', role_description: 'QCx standard development, training curriculum, Quality in Action program' },
+    { name: 'Kaenon Stockglausner', org: 'PGCIS', title: 'MCx Specialist and OR', email: 'kaenon@pgcis.com', phone: '(469) 999-8691', role_description: 'Field-level QA/QC, mechanical commissioning, D2C cooling' },
+    { name: 'Tarif Abboushi PE', org: 'PGCIS', title: 'Senior Mission Critical Facilities Executive', email: 'tarif@pgcis.com', phone: '(713) 249-0101', role_description: 'Electrical engineering design review, PE authority' },
+    { name: 'Jim Doucette', org: 'PGCIS', title: 'Project Executive / Owner\'s Representative', email: 'jim@pgcis.com', phone: '', role_description: 'GC contract management, schedule, construction execution' },
+    { name: 'Royce Praytor', org: 'PGCIS', title: 'Cx OR / Controls Subject Expert', email: 'royce.p@pgcis.com', phone: '', role_description: 'BAS/BMS controls SME, QA/QC oversight' },
+    { name: 'Mohamed Ben-Salah', org: 'PGCIS', title: 'Mechanical Commissioning Lead', email: 'mohamed@pgcis.com', phone: '', role_description: 'Mechanical design review, D2C cooling, EMEA hyperscale Cx' },
+    { name: 'Muhammed Kurt', org: 'PGCIS', title: 'Data Center Design Manager & Electrical Cx SME', email: 'muhammed.kurt@pgcis.com', phone: '', role_description: 'Safety/EHS lead, HV/MV electrical systems, EMEA' },
+    { name: 'Benton Peret', org: 'PGCIS', title: 'Data Center Design Manager & Advisor', email: 'benton@pgcis.com', phone: '', role_description: 'Document control, reporting, technology enablement, tools strategy' },
+    { name: 'Herman Brumme', org: 'PGCIS', title: 'Cx Owner\'s Representative', email: 'skip@pgcis.com', phone: '', role_description: 'Anchor/final pressure-test reviewer, electrical Cx' },
+    { name: 'Bhavitha Chennupati', org: 'PGCIS', title: 'Cx Project Coordinator', email: 'bhavi@pgcis.com', phone: '(346) 387-5421', role_description: 'Document control support, electrical peer review' },
+    { name: 'Matt Striffler', org: 'Beale', title: 'SVP, Construction', email: 'mstriffler@bealeinfra.com', phone: '(319) 321-6377', role_description: 'Primary POC - Cx program owner. Delivery, schedule, execution.' },
+    { name: 'Alfonso Portillo', org: 'Beale', title: 'SVP, Design & Innovation', email: 'aportillo@bealeinfra.com', phone: '', role_description: 'Engineering team lead, commissioning challenges, D2C cooling design' },
+    { name: 'Scott Robertson', org: 'Beale', title: 'Chief Delivery Officer', email: 'srobertson@bealeinfra.com', phone: '', role_description: 'Delivery oversight, escalation' },
+    { name: 'Kevin Klucsarits', org: 'Beale', title: 'VP Engineering (Offsite Infrastructure)', email: 'kklucsarits@bealeinfra.com', phone: '', role_description: 'Water, power, fiber, mechanical/electrical BOD' },
+    { name: 'Roger Portillo', org: 'Beale', title: 'Procurement', email: 'rportillo@bealeinfra.com', phone: '', role_description: 'OEM finalist list, vendor coordination' },
+    { name: 'Salvador Garcia', org: 'Beale', title: 'Program Manager', email: 'sgarcia@bealeinfra.com', phone: '', role_description: 'Design through construction support, Procore admin' },
+    { name: 'Valeriya Alvarez', org: 'Beale', title: 'Project Coordination (Legal/Contracts)', email: 'valvarez@partners.bealeinfra.com', phone: '', role_description: 'Contract/legal support' }
+  ],
+  assignments: [
+    { workstream: 'Commercial / Contract', person: 'Erik Stockglausner', role: 'Lead', note: '' },
+    { workstream: 'Commercial / Contract', person: 'Benton Peret', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Commercial / Contract', person: 'Matt Striffler', role: 'Lead', note: '' },
+    { workstream: 'Commercial / Contract', person: 'Valeriya Alvarez', role: 'Support', note: '' },
+    { workstream: 'Commercial / Contract', person: 'Scott Robertson', role: 'Support', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Tyler Dunlap', role: 'Lead', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Kaenon Stockglausner', role: 'Co-Lead', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Erik Stockglausner', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Muhammed Kurt', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Mohamed Ben-Salah', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Benton Peret', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Royce Praytor', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Jim Doucette', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Herman Brumme', role: 'Peer Reviewer', note: '' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', person: 'Matt Striffler', role: 'Lead', note: '' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Tarif Abboushi PE', role: 'Lead', note: '' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Tyler Dunlap', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Muhammed Kurt', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Bhavitha Chennupati', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Kaenon Stockglausner', role: 'Peer Reviewer', note: 'SCCS' },
+    { workstream: 'Electrical Engineering / Design Review', person: 'Herman Brumme', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', person: 'Mohamed Ben-Salah', role: 'Lead', note: '' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', person: 'Kaenon Stockglausner', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', person: 'Royce Praytor', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', person: 'Erik Stockglausner', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', person: 'Royce Praytor', role: 'Lead', note: '' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', person: 'Mohamed Ben-Salah', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', person: 'Muhammed Kurt', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', person: 'Kaenon Stockglausner', role: 'Peer Reviewer', note: '' },
+    { workstream: 'GC Contract / Supply Chain', person: 'Jim Doucette', role: 'Lead', note: '' },
+    { workstream: 'GC Contract / Supply Chain', person: 'Tarif Abboushi PE', role: 'Peer Reviewer', note: '' },
+    { workstream: 'GC Contract / Supply Chain', person: 'Royce Praytor', role: 'Peer Reviewer', note: '' },
+    { workstream: 'GC Contract / Supply Chain', person: 'Benton Peret', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Schedule / Program Management', person: 'Jim Doucette', role: 'Lead', note: '' },
+    { workstream: 'Schedule / Program Management', person: 'Benton Peret', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Schedule / Program Management', person: 'Tarif Abboushi PE', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', person: 'Benton Peret', role: 'Lead', note: '' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', person: 'Tyler Dunlap', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', person: 'Mohamed Ben-Salah', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', person: 'Bhavitha Chennupati', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', person: 'Erik Stockglausner', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Safety / EHS', person: 'Muhammed Kurt', role: 'Lead', note: '' },
+    { workstream: 'Safety / EHS', person: 'Tyler Dunlap', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Safety / EHS', person: 'Benton Peret', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Safety / EHS', person: 'Jim Doucette', role: 'Peer Reviewer', note: '' },
+    { workstream: 'Safety / EHS', person: 'Royce Praytor', role: 'Peer Reviewer', note: '' }
+  ],
+  deliverables: [
+    { workstream: 'Commercial / Contract', deliverable: 'Contract Review Memoranda (GC, CxA, Tenant)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Commercial / Contract', deliverable: 'Risk Matrix for Contract Gaps with Redlines', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Beale Commissioning Specification', phase: 'Phase 1', status: 'In Progress' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Procedure/Checklist Library (L1-L6)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Equipment Labeling, QR & Cx Tagging Standard', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Deficiency Management System', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Commissioning Plan Template', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Quality Program Workshop Materials', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'CxA Performance Assessments', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'QCx Program (QA/QC, Commissioning, Quality in Action)', deliverable: 'Level Transition Readiness Assessments', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Electrical Engineering / Design Review', deliverable: 'Spec/BOD QC Review Comments (Electrical)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Electrical Engineering / Design Review', deliverable: 'SPOF Analysis Report (Electrical)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Electrical Engineering / Design Review', deliverable: 'Design Milestone Review Comments (SD/DD/CD/IFC)', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', deliverable: 'Spec/BOD QC Review Comments (Mechanical/D2C)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', deliverable: 'SPOF Analysis Report (Mechanical)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', deliverable: 'Digital Twin & Thermodynamic Model', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Mechanical / D2C Cooling / Design Review', deliverable: 'FOAK Equipment Startup Witness Reports', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', deliverable: 'Spec/BOD QC Review Comments (Controls/BMS)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', deliverable: 'SoO Review and Gap Analysis', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Controls / BMS / DCIM / Design Review', deliverable: 'Design Milestone Review Comments (Controls)', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'GC Contract / Supply Chain', deliverable: 'Contract Review Memoranda (GC, CxA, Tenant)', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'GC Contract / Supply Chain', deliverable: 'CxA Contract Development', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Schedule / Program Management', deliverable: 'Cx Schedule & Resource Plan', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Schedule / Program Management', deliverable: 'Load Bank Strategy Memo', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Cx Platform Configuration', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Reporting Templates & KPIs', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Dashboard & Heat Map Access', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Monthly Executive Advisory Reports', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Pareto Analyses & Data Analytics', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Document Control, Reporting, and Technology Enablement', deliverable: 'Individual Performance Report Cards', phase: 'Phase 2', status: 'Not Started' },
+    { workstream: 'Safety / EHS', deliverable: 'Safety Program Alignment Review', phase: 'Phase 1', status: 'Not Started' },
+    { workstream: 'Safety / EHS', deliverable: 'Field Safety Protocols', phase: 'Phase 1', status: 'Not Started' }
+  ]
+};
+
+// Sheet data provided by Apps Script server-side
+
+async function loadAllData() {
+  // Data is injected server-side by Apps Script
+  const serverData = <?!= data ?>;
+  if (serverData && serverData.workstreams && serverData.workstreams.length > 0) {
+    return serverData;
+  }
+  console.warn('Server data empty, using fallback');
+  return FALLBACK_DATA;
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+
+// Global reference to loaded data for contact popups
+let directoryData = null;
+
+function escapeAttr(str) {
+  return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function renderHeader() {
+  return `
+    <div class="header">
+      <div class="header-left">
+        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjMyIiBoZWlnaHQ9Ijg1IiB2aWV3Qm94PSIwIDAgMjMyIDg1IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8ZyBpZD0iR3JvdXAiPgo8ZyBpZD0iR3JvdXBfMiI+CjxwYXRoIGlkPSJWZWN0b3IiIGQ9Ik0wIDU5Ljg2NTdWMzguNjE3OUg4LjUwNzUxQzEwLjA3MDggMzguNjE3OSAxMS4zNzQ0IDM4Ljg0OTYgMTIuNDE4OSAzOS4zMTMxQzEzLjQ2MzQgMzkuNzc2NSAxNC4yNDgzIDQwLjQxODIgMTQuNzc0IDQxLjIzNzRDMTUuMjk5OCA0Mi4wNTcxIDE1LjU2MjQgNDIuOTk5OCAxNS41NjI0IDQ0LjA2NDdDMTUuNTYyNCA0NC44OTQ5IDE1LjM5NjQgNDUuNjIyNyAxNS4wNjQ2IDQ2LjI0ODZDMTQuNzMyNyA0Ni44NzQ1IDE0LjI3NzQgNDcuMzg2MyAxMy43MDA0IDQ3Ljc4MzlDMTMuMTIyOCA0OC4xODE2IDEyLjQ2MzcgNDguNDYzNCAxMS43MjM3IDQ4LjYyOTNWNDguODM2NkMxMi41MzMgNDguODcxNSAxMy4yOTIzIDQ5LjA5OTggMTQuMDAwOCA0OS41MjEzQzE0LjcxIDQ5Ljk0MzQgMTUuMjg1OCA1MC41MzI2IDE1LjcyODMgNTEuMjkwMUMxNi4xNzA4IDUyLjA0NzYgMTYuMzkyIDUyLjk0ODMgMTYuMzkyIDUzLjk5MjhDMTYuMzkyIDU1LjEyIDE2LjExMzcgNTYuMTI0OSAxNS41NTY1IDU3LjAwN0MxNC45OTk5IDU3Ljg4OTEgMTQuMTc4NCA1OC41ODYgMTMuMDkyNiA1OS4wOTc4QzEyLjAwNjcgNTkuNjA5NiAxMC42NjgyIDU5Ljg2NTcgOS4wNzc1MSA1OS44NjU3SDBaTTQuNDkyNDcgNDcuNTA5MUg3LjgyMjgxQzguNDM4MjMgNDcuNTA5MSA4Ljk4NjY5IDQ3LjQwMDIgOS40NjcwMiA0Ny4xODI1QzkuOTQ3OTQgNDYuOTY0NyAxMC4zMjgxIDQ2LjY1NSAxMC42MDgyIDQ2LjI1MzhDMTAuODg4MiA0NS44NTI3IDExLjAyODYgNDUuMzcxOCAxMS4wMjg2IDQ0LjgxMTdDMTEuMDI4NiA0NC4wNDM3IDEwLjc1NzIgNDMuNDI0OCAxMC4yMTQgNDIuOTU0M0M5LjY3MDggNDIuNDgzOSA4LjkwMTY4IDQyLjI0ODcgNy45MDU0OSA0Mi4yNDg3SDQuNDkxODlWNDcuNTA5MUg0LjQ5MjQ3Wk00LjQ5MjQ3IDU2LjE5M0g4LjE1NDY4QzkuNDA2NDcgNTYuMTkzIDEwLjMxOTQgNTUuOTUyNiAxMC44OTM1IDU1LjQ3MjJDMTEuNDY3NiA1NC45OTEzIDExLjc1NDYgNTQuMzUwMyAxMS43NTQ2IDUzLjU0NzRDMTEuNzU0NiA1Mi45NTkzIDExLjYxMjUgNTIuNDQxMiAxMS4zMjkgNTEuOTkxMUMxMS4wNDU0IDUxLjU0MTYgMTAuNjQyNSA1MS4xODg4IDEwLjEyMDMgNTAuOTMyNkM5LjU5ODAyIDUwLjY3NyA4Ljk3NzM3IDUwLjU0ODkgOC4yNTc3NCA1MC41NDg5SDQuNDkxODlWNTYuMTkzSDQuNDkyNDdaIiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGlkPSJWZWN0b3JfMiIgZD0iTTMzLjMzNjYgNTMuMDI4NVY1MS44MTQ1QzMzLjMzNjYgNTAuNDU5MSAzMy4xNDYyIDQ5LjI3NDMgMzIuNzY2IDQ4LjI2MTJDMzIuMzg1OCA0Ny4yNDgxIDMxLjg1NDggNDYuNDA1NyAzMS4xNzM2IDQ1LjczNDlDMzAuNDkyNCA0NS4wNjQyIDI5LjY5NzEgNDQuNTYxMiAyOC43ODc3IDQ0LjIyNTJDMjcuODc4MiA0My44ODk5IDI2Ljg5NzggNDMuNzIyMiAyNS44NDYzIDQzLjcyMjJDMjQuMjgzIDQzLjcyMjIgMjIuOTIyMyA0NC4wNjggMjEuNzYzNyA0NC43NTk3QzIwLjYwNSA0NS40NTE0IDE5LjcwNzggNDYuNDE2MSAxOS4wNzE1IDQ3LjY1NDVDMTguNDM1MSA0OC44OTI5IDE4LjExNzIgNTAuMzMxIDE4LjExNzIgNTEuOTcwNkMxOC4xMTcyIDUzLjYxMDEgMTguNDM1MSA1NS4xMDU5IDE5LjA3MTUgNTYuMzMzMkMxOS43MDc4IDU3LjU2MTEgMjAuNjE1NSA1OC41MDg0IDIxLjc5NTEgNTkuMTc2MkMyMi45NzQxIDU5Ljg0NDEgMjQuMzgzNyA2MC4xNzc3IDI2LjAyMzMgNjAuMTc3N0MyNy4zMzczIDYwLjE3NzcgMjguNDk3NyA1OS45NzU2IDI5LjUwMzggNTkuNTcxQzMwLjUwOTkgNTkuMTY2MyAzMS4zMzMyIDU4LjU5OTIgMzEuOTczIDU3Ljg2OTdDMzIuNjEyOSA1Ny4xNDAyIDMzLjAzNjIgNTYuMjg0MyAzMy4yNDQgNTUuMzAyMUwyOS4xNTYyIDU1LjAzMjVDMjkuMDA0MyA1NS40MzM3IDI4Ljc4MyA1NS43NzI1IDI4LjQ5MjUgNTYuMDQ5MUMyOC4yMDIgNTYuMzI1NiAyNy44NTI2IDU2LjUzMzUgMjcuNDQ0NSA1Ni42NzE1QzI3LjAzNjMgNTYuODEwMSAyNi41ODY5IDU2Ljg3ODggMjYuMDk2IDU2Ljg3ODhDMjUuMzU2IDU2Ljg3ODggMjQuNzE2MiA1Ni43MjMzIDI0LjE3NjQgNTYuNDExOEMyMy42MzY3IDU2LjEwMDMgMjMuMjIwNCA1NS42NTc4IDIyLjkyNjQgNTUuMDgzOEMyMi42MzI0IDU0LjUwOTcgMjIuNDg1NiA1My44Mjg1IDIyLjQ4NTYgNTMuMDQwMVY1My4wMjk3SDMzLjMzNzhMMzMuMzM2NiA1My4wMjg1Wk0yNC4xMzkyIDQ3LjQ4MzRDMjQuNjU0NCA0Ny4xNzU0IDI1LjI0NzcgNDcuMDIxNyAyNS45MTg1IDQ3LjAyMTdDMjYuNTg5MiA0Ny4wMjE3IDI3LjEyNzIgNDcuMTYyIDI3LjYxNTEgNDcuNDQyQzI4LjEwMyA0Ny43MjIxIDI4LjQ4NDkgNDguMTA4MSAyOC43NjE1IDQ4LjU5ODlDMjkuMDM4IDQ5LjA5MDMgMjkuMTc2NiA0OS42NTM5IDI5LjE3NjYgNTAuMjkwM0gyMi40ODkxQzIyLjUxNTkgNDkuNzE3OSAyMi42NjI2IDQ5LjE5MzkgMjIuOTMxIDQ4LjcxODNDMjMuMjIxNiA0OC4yMDMgMjMuNjI0NSA0Ny43OTE0IDI0LjEzOTcgNDcuNDgzNEgyNC4xMzkyWiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBpZD0iVmVjdG9yXzMiIGQ9Ik00MC40MTM2IDYwLjE2NjZDMzkuMzk3IDYwLjE2NjYgMzguNDkwNSA1OS45ODg0IDM3LjY5NTIgNTkuNjMyMUMzNi44OTk5IDU5LjI3NTggMzYuMjcyMiA1OC43NDY2IDM1LjgxMjMgNTguMDQ1QzM1LjM1MjMgNTcuMzQyOCAzNS4xMjIzIDU2LjQ2NjYgMzUuMTIyMyA1NS40MTVDMzUuMTIyMyA1NC41MzAxIDM1LjI4NDggNTMuNzg2IDM1LjYxMDIgNTMuMTg0NUMzNS45MzUxIDUyLjU4MjUgMzYuMzc4MiA1Mi4wOTg3IDM2LjkzODMgNTEuNzMxOUMzNy40OTg0IDUxLjM2NTEgMzguMTM2NSA1MS4wODg1IDM4Ljg1MjYgNTAuOTAxNkMzOS41Njg4IDUwLjcxNDcgNDAuMzIxIDUwLjU4MzcgNDEuMTA5NCA1MC41MDc0QzQyLjAzNjMgNTAuNDEwOCA0Mi43ODMzIDUwLjMxODggNDMuMzUwNCA1MC4yMzI2QzQzLjkxNzQgNTAuMTQ2NSA0NC4zMjkxIDUwLjAxNjYgNDQuNTg1MyA0OS44NDM3QzQ0Ljg0MDkgNDkuNjcwOCA0NC45Njg5IDQ5LjQxNTIgNDQuOTY4OSA0OS4wNzU4VjQ5LjAxMzVDNDQuOTY4OSA0OC4zNTY3IDQ0Ljc2MjggNDcuODQ3OCA0NC4zNTE4IDQ3LjQ4ODZDNDMuOTQwMiA0Ny4xMjg4IDQzLjM1NzMgNDYuOTQ4OSA0Mi42MDM0IDQ2Ljk0ODlDNDEuODA4IDQ2Ljk0ODkgNDEuMTc1MiA0Ny4xMjM1IDQwLjcwNDcgNDcuNDcyOUM0MC4yMzQzIDQ3LjgyMjIgMzkuOTIyOCA0OC4yNiAzOS43NzA4IDQ4Ljc4NTJMMzUuNjgzIDQ4LjQ1MzRDMzUuODkwMyA0Ny40ODUxIDM2LjI5ODQgNDYuNjQ2NyAzNi45MDc0IDQ1LjkzNzVDMzcuNTE1OSA0NS4yMjg0IDM4LjMwMyA0NC42ODIzIDM5LjI2NzggNDQuMjk4QzQwLjIzMjUgNDMuOTE0MyA0MS4zNTE2IDQzLjcyMjIgNDIuNjI0MyA0My43MjIyQzQzLjUwOTkgNDMuNzIyMiA0NC4zNTg4IDQzLjgyNTggNDUuMTcxNiA0NC4wMzM3QzQ1Ljk4NDQgNDQuMjQwOSA0Ni43MDY5IDQ0LjU2MjkgNDcuMzM5OCA0NC45OTg0QzQ3Ljk3MjcgNDUuNDMzOSA0OC40NzIyIDQ1Ljk5MjkgNDguODM5IDQ2LjY3NDFDNDkuMjA1MiA0Ny4zNTUzIDQ5LjM4ODYgNDguMTY5OCA0OS4zODg2IDQ5LjExNzFWNTkuODY1Nkg0NS4xOTcyVjU3LjY1NTVINDUuMDcyNkM0NC44MTY0IDU4LjE1MzMgNDQuNDc0MSA1OC41OTExIDQ0LjA0NTUgNTguOTY3OEM0My42MTY0IDU5LjM0NTEgNDMuMTAxMiA1OS42Mzg1IDQyLjQ5OTcgNTkuODQ5OUM0MS44OTc3IDYwLjA2MDYgNDEuMjAzMSA2MC4xNjYgNDAuNDE0MiA2MC4xNjZMNDAuNDEzNiA2MC4xNjY2Wk00MS42Nzk0IDU3LjExNjNDNDIuMzI5MSA1Ny4xMTYzIDQyLjkwMzggNTYuOTg2NSA0My40MDE2IDU2LjcyNzRDNDMuODk5NCA1Ni40NjgzIDQ0LjI5MDEgNTYuMTE3MiA0NC41NzQyIDU1LjY3NDFDNDQuODU3NyA1NS4yMzE2IDQ0Ljk5OTggNTQuNzI5OCA0NC45OTk4IDU0LjE2OTdWNTIuNDc4M0M0NC44NjEyIDUyLjU2OCA0NC42NzMyIDUyLjY0OTUgNDQuNDM0NSA1Mi43MjIyQzQ0LjE5NTggNTIuNzk1IDQzLjkyNzkgNTIuODYwOCA0My42MzA0IDUyLjkxOTZDNDMuMzMyOSA1Mi45Nzg0IDQzLjAzNTQgNTMuMDMwMiA0Mi43Mzg0IDUzLjA3NTFDNDIuNDQwOSA1My4xMTk5IDQyLjE3MTMgNTMuMTYwMSA0MS45MjkxIDUzLjE5NDRDNDEuNDEwNCA1My4yNzA3IDQwLjk1NzQgNTMuMzkxOCA0MC41NzAyIDUzLjU1NzdDNDAuMTgzIDUzLjcyMzcgMzkuODgyIDUzLjk0NjcgMzkuNjY3OCA1NC4yMjY3QzM5LjQ1MzUgNTQuNTA2OCAzOS4zNDY0IDU0Ljg1NDQgMzkuMzQ2NCA1NS4yNjk1QzM5LjM0NjQgNTUuODcwOSAzOS41NjU5IDU2LjMyOTcgNDAuMDA1NSA1Ni42NDQxQzQwLjQ0NDUgNTYuOTU5MSA0MS4wMDI4IDU3LjExNjMgNDEuNjgxMSA1Ny4xMTYzSDQxLjY3OTRaIiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGlkPSJWZWN0b3JfNCIgZD0iTTU2Ljg5MDYgMzguNjE3OVY1OS44NjU3SDUyLjQ3MDlWMzguNjE3OUg1Ni44OTA2WiIgZmlsbD0iI0ZGRkZGRiIvPgo8ZyBpZD0iR3JvdXBfMyI+CjxwYXRoIGlkPSJWZWN0b3JfNSIgZD0iTTc0LjUzMSA1My4wMjg1VjUxLjgxNDVDNzQuNTMxIDUwLjQ1OTEgNzQuMzQwNiA0OS4yNzQzIDczLjk2MDQgNDguMjYxMkM3My41ODAyIDQ3LjI0ODEgNzMuMDQ5MiA0Ni40MDU3IDcyLjM2OCA0NS43MzQ5QzcxLjY4NjggNDUuMDY0MiA3MC44OTA5IDQ0LjU2MTIgNjkuOTgyIDQ0LjIyNTJDNjkuMDcyNiA0My44ODk5IDY4LjA5MjEgNDMuNzIyMiA2Ny4wNDA2IDQzLjcyMjJDNjUuNDc3MyA0My43MjIyIDY0LjExNjYgNDQuMDY4IDYyLjk1OCA0NC43NTk3QzYxLjc5OTQgNDUuNDUxNCA2MC45MDIyIDQ2LjQxNjEgNjAuMjY1OCA0Ny42NTQ1QzU5LjYyOTQgNDguODkyOSA1OS4zMTE1IDUwLjMzMSA1OS4zMTE1IDUxLjk3MDZDNTkuMzExNSA1My42MTAxIDU5LjYyOTQgNTUuMTA1OSA2MC4yNjU4IDU2LjMzMzJDNjAuOTAyMiA1Ny41NjExIDYxLjgwOTkgNTguNTA4NCA2Mi45ODk1IDU5LjE3NjJDNjQuMTY4NSA1OS44NDQxIDY1LjU3OCA2MC4xNzc3IDY3LjIxNzYgNjAuMTc3N0M2OC41MzE3IDYwLjE3NzcgNjkuNjkyMSA1OS45NzU2IDcwLjY5ODIgNTkuNTcxQzcxLjcwNDIgNTkuMTY2MyA3Mi41Mjc1IDU4LjU5OTIgNzMuMTY3NCA1Ny44Njk3QzczLjgwNzIgNTcuMTQwMiA3NC4yMzA1IDU2LjI4NDMgNzQuNDM4NCA1NS4zMDIxTDcwLjM1MDYgNTUuMDMyNUM3MC4xOTg2IDU1LjQzMzcgNjkuOTc2OCA1NS43NzI1IDY5LjY4NjggNTYuMDQ5MUM2OS4zOTYzIDU2LjMyNTYgNjkuMDQ3IDU2LjUzMzUgNjguNjM4OCA1Ni42NzE1QzY4LjIzMDcgNTYuODEwMSA2Ny43ODEyIDU2Ljg3ODggNjcuMjkwNCA1Ni44Nzg4QzY2LjU1MDQgNTYuODc4OCA2NS45MTA1IDU2LjcyMzMgNjUuMzcwOCA1Ni40MTE4QzY0LjgzMSA1Ni4xMDAzIDY0LjQxNDggNTUuNjU3OCA2NC4xMjA3IDU1LjA4MzhDNjMuODI2NyA1NC41MDk3IDYzLjY4IDUzLjgyODUgNjMuNjggNTMuMDQwMVY1My4wMjk3SDc0LjUzMjFMNzQuNTMxIDUzLjAyODVaTTY1LjMzMzUgNDcuNDgzNEM2NS44NDg4IDQ3LjE3NTQgNjYuNDQyMSA0Ny4wMjE3IDY3LjExMjggNDcuMDIxN0M2Ny43ODM1IDQ3LjAyMTcgNjguMzIxNSA0Ny4xNjIgNjguODA5NCA0Ny40NDJDNjkuMjk3MyA0Ny43MjIxIDY5LjY3OTMgNDguMTA4MSA2OS45NTU4IDQ4LjU5ODlDNzAuMjMyNCA0OS4wOTAzIDcwLjM3MDkgNDkuNjUzOSA3MC4zNzA5IDUwLjI5MDNINjMuNjgzNUM2My43MTAzIDQ5LjcxNzkgNjMuODU3IDQ5LjE5MzkgNjQuMTI1NCA0OC43MTgzQzY0LjQxNTkgNDguMjAzIDY0LjgxODggNDcuNzkxNCA2NS4zMzQxIDQ3LjQ4MzRINjUuMzMzNVoiIGZpbGw9IiNGRkZGRkYiLz4KPC9nPgo8L2c+CjxnIGlkPSJHcm91cF80Ij4KPHBhdGggaWQ9IlZlY3Rvcl82IiBkPSJNMS45Mzk5OCA2My4zODg0Vjg0LjYzNjJIMFY2My4zODg0SDEuOTM5OThaIiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGlkPSJWZWN0b3JfNyIgZD0iTTcuMTgzMDEgNzQuNjc2OFY4NC42MzY5SDUuMzM2MThWNjguNzAwOEg3LjEzMTE5VjcxLjIwMDlINy4yOTcxMkM3LjY3MDkxIDcwLjM4NDYgOC4yNTMxNCA2OS43Mjk2IDkuMDQ1NTUgNjkuMjM0N0M5LjgzNzM4IDY4Ljc0MDQgMTAuODE3OSA2OC40OTI5IDExLjk4NyA2OC40OTI5QzEzLjA1ODkgNjguNDkyOSAxNC4wMDE1IDY4LjcxNTkgMTQuODE0MyA2OS4xNjE5QzE1LjYyNzEgNjkuNjA3OSAxNi4yNTk5IDcwLjI2MzUgMTYuNzEyOSA3MS4xMjgxQzE3LjE2NTkgNzEuOTkyNyAxNy4zOTI0IDczLjA1NDcgMTcuMzkyNCA3NC4zMTM0Vjg0LjYzNjNIMTUuNTQ1NVY3NC40Mjc2QzE1LjU0NTUgNzMuMTIwNSAxNS4xODA1IDcyLjA4NjQgMTQuNDUxIDcxLjMyNTVDMTMuNzIxNCA3MC41NjQ1IDEyLjc0NDQgNzAuMTg0MyAxMS41MiA3MC4xODQzQzEwLjY4MzQgNzAuMTg0MyA5LjkzOTI3IDcwLjM2NDIgOS4yODk1MSA3MC43MjRDOC42MzkxNiA3MS4wODM4IDguMTI1NjMgNzEuNjAwOCA3Ljc0ODkzIDcyLjI3NTFDNy4zNzE2NSA3Mi45NDkzIDcuMTgzNTkgNzMuNzQ5OSA3LjE4MzU5IDc0LjY3NjhINy4xODMwMVoiIGZpbGw9IiNGRkZGRkYiLz4KPHBhdGggaWQ9IlZlY3Rvcl84IiBkPSJNMjMuNzkyNiA2NC45MjQyQzI0LjIyODEgNjQuNDc0OCAyNC44NDcgNjQuMjUgMjUuNjQ5OSA2NC4yNUMyNS45NTQ0IDY0LjI1IDI2LjIwNjUgNjQuMjc1NiAyNi40MDc0IDY0LjMyOEMyNi42MDc2IDY0LjM3OTkgMjYuNzc3MSA2NC40Mjk5IDI2LjkxNTYgNjQuNDc4M0wyNy40NTU0IDYyLjg1OTdDMjcuMjY4NSA2Mi43NzY0IDI3LjAxNDYgNjIuNjk3MiAyNi42OTI2IDYyLjYyMUMyNi4zNzEzIDYyLjU0NDcgMjUuOTY3OCA2Mi41MDY4IDI1LjQ4MzkgNjIuNTA2OEMyNC43NjQzIDYyLjUwNjggMjQuMDgzMSA2Mi42NTcxIDIzLjQ0MDMgNjIuOTU4MUMyMi43OTcgNjMuMjU5MSAyMi4yNzY1IDYzLjcwMzMgMjEuODc4OCA2NC4yOTE0QzIxLjQ4MTEgNjQuODc5NCAyMS4yODIgNjUuNjAyIDIxLjI4MiA2Ni40NTk2VjY4LjcwMDZIMTguODMzN1Y3MC4zMDg3SDIxLjI4MlY4NC42MzY3SDIzLjEyODhMMjMuMTM3IDcwLjMwODdIMjYuNjY2NFY2OC43MDA2SDIzLjEzODFMMjMuMTM5MyA2Ni44NDMzQzIzLjEzOTMgNjYuMDEzIDIzLjM1NzEgNjUuMzczNyAyMy43OTMyIDY0LjkyMzdMMjMuNzkyNiA2NC45MjQyWiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBpZD0iVmVjdG9yXzkiIGQ9Ik0yOC42Njc3IDg0LjYzNjhWNjguNzAwNkgzMC40NjI3VjcxLjE0ODlIMzAuNTk3OEMzMC45MTU3IDcwLjM0NjYgMzEuNDcxMiA2OS42OTggMzIuMjYzIDY5LjIwMzdDMzMuMDU0OCA2OC43MDk0IDMzLjk1MjYgNjguNDYxOSAzNC45NTUyIDY4LjQ2MTlDMzUuMTA3MiA2OC40NjE5IDM1LjI3NjYgNjguNDY1NCAzNS40NjM1IDY4LjQ3MjRDMzUuNjUwNCA2OC40Nzk0IDM1LjgwNTggNjguNDg2NCAzNS45MzA0IDY4LjQ5MzRWNzAuMzcxQzM1Ljg0NzIgNzAuMzU3MSAzNS43MDIyIDcwLjMzNjcgMzUuNDk0OSA3MC4zMDg3QzM1LjI4NzcgNzAuMjgxNCAzNS4wNjIzIDcwLjI2NzQgMzQuODIwNyA3MC4yNjc0QzMzLjk5MDQgNzAuMjY3NCAzMy4yNTIyIDcwLjQ0MjEgMzIuNjA1OSA3MC43OTE0QzMxLjk1OTEgNzEuMTQwNyAzMS40NDkgNzEuNjIzNCAzMS4wNzU4IDcyLjIzODhDMzAuNzAyIDcyLjg1NDggMzAuNTE1NyA3My41NTY0IDMwLjUxNTcgNzQuMzQ0N1Y4NC42MzY4SDI4LjY2ODlIMjguNjY3N1oiIGZpbGw9IiNGRkZGRkYiLz4KPHBhdGggaWQ9IlZlY3Rvcl8xMCIgZD0iTTQxLjc4NDEgODQuOTk5NEM0MC44MjI5IDg0Ljk5OTQgMzkuOTQ0MyA4NC44MTA4IDM5LjE0OSA4NC40MzQxQzM4LjM1MzcgODQuMDU3MyAzNy43MjA4IDgzLjUxMDYgMzcuMjUwMyA4Mi43OTQ1QzM2Ljc3OTkgODIuMDc4OSAzNi41NDQ3IDgxLjIwOTEgMzYuNTQ0NyA4MC4xODVDMzYuNTQ0NyA3OS4zOTY2IDM2LjY5MzEgNzguNzMyMyAzNi45OTA3IDc4LjE5MzJDMzcuMjg4MiA3Ny42NTM0IDM3LjcwOTcgNzcuMjEwOSAzOC4yNTY0IDc2Ljg2NTFDMzguODAyNiA3Ni41MTkyIDM5LjQ0OTQgNzYuMjQ2MiA0MC4xOTY0IDc2LjA0NTNDNDAuOTQzNCA3NS44NDUgNDEuNzY2NyA3NS42ODkgNDIuNjY1NiA3NS41Nzg0QzQzLjU1ODIgNzUuNDY3NyA0NC4zMTMzIDc1LjM3MTEgNDQuOTMyOCA3NS4yODc4QzQ1LjU1MTcgNzUuMjA0NiA0Ni4wMjM5IDc1LjA3MzYgNDYuMzQ4OCA3NC44OTM3QzQ2LjY3MzcgNzQuNzEzOCA0Ni44MzY3IDc0LjQyMzIgNDYuODM2NyA3NC4wMjIxVjczLjY0ODlDNDYuODM2NyA3Mi41NjMgNDYuNTEzNiA3MS43MDcxIDQ1Ljg2NjcgNzEuMDgxMkM0NS4yMTk5IDcwLjQ1NTMgNDQuMjkxMiA3MC4xNDIxIDQzLjA4MDggNzAuMTQyMUM0MS45MzI2IDcwLjE0MjEgNDAuOTk3IDcwLjM5NDggNDAuMjc0NCA3MC44OTk2QzM5LjU1MTkgNzEuNDA0NCAzOS4wNDQ4IDcxLjk5OTQgMzguNzU0OCA3Mi42ODQxTDM3LjAwMTEgNzIuMDUxMkMzNy4zNjEgNzEuMTc5NiAzNy44NTg4IDcwLjQ4MzMgMzguNDk1MSA2OS45NjA1QzM5LjEzMTUgNjkuNDM4MiAzOS44NDQyIDY5LjA2MTUgNDAuNjMyNSA2OC44Mjk4QzQxLjQyMDggNjguNTk4IDQyLjIxOTcgNjguNDgyMiA0My4wMjg5IDY4LjQ4MjJDNDMuNjM3NCA2OC40ODIyIDQ0LjI3MiA2OC41NjE5IDQ0LjkzMjggNjguNzIwOUM0NS41OTMxIDY4Ljg3OTggNDYuMjA3MyA2OS4xNTUyIDQ2Ljc3NDQgNjkuNTQ1OUM0Ny4zNDE1IDY5LjkzNjYgNDcuODAxNSA3MC40Nzk4IDQ4LjE1NDMgNzEuMTc1QzQ4LjUwNzEgNzEuODcwMiA0OC42ODM1IDcyLjc1MDUgNDguNjgzNSA3My44MTU0Vjg0LjYzNjdINDYuODM2N1Y4Mi4xMTU2SDQ2LjcyMjZDNDYuNTAxNCA4Mi41ODYxIDQ2LjE3MyA4My4wNDI1IDQ1LjczNjkgODMuNDg1QzQ1LjMwMTQgODMuOTI3NSA0NC43NTQ3IDg0LjI5MDggNDQuMDk3OSA4NC41NzQ0QzQzLjQ0MDYgODQuODU3OSA0Mi42Njk3IDg1IDQxLjc4NDEgODVWODQuOTk5NFpNNDIuMDMyOCA4My4zMDg2QzQzLjAxNSA4My4zMDg2IDQzLjg2NTYgODMuMDkwOSA0NC41ODUyIDgyLjY1NDhDNDUuMzA0MyA4Mi4yMTkzIDQ1Ljg1OTcgODEuNjM5OSA0Ni4yNTA0IDgwLjkxNjhDNDYuNjQxMSA4MC4xOTQzIDQ2LjgzNjcgNzkuMzk2NiA0Ni44MzY3IDc4LjUyNTZWNzYuMjIyM0M0Ni42OTgxIDc2LjM1MzkgNDYuNDY4MiA3Ni40NzE1IDQ2LjE0NjggNzYuNTc1MUM0NS44MjU0IDc2LjY3ODggNDUuNDU1MSA3Ni43NzA4IDQ1LjAzNjUgNzYuODVDNDQuNjE3OCA3Ni45Mjk3IDQ0LjIwMSA3Ni45OTczIDQzLjc4NjQgNzcuMDUyQzQzLjM3MTMgNzcuMTA3MyA0Mi45OTgxIDc3LjE1NTYgNDIuNjY2MiA3Ny4xOTdDNDEuNzY3MyA3Ny4zMDc2IDQwLjk5OTMgNzcuNDgwNSA0MC4zNjI5IDc3LjcxNTdDMzkuNzI2NiA3Ny45NTEgMzkuMjM4NiA3OC4yNzQxIDM4Ljg5OTggNzguNjg1N0MzOC41NjA5IDc5LjA5NzQgMzguMzkxNSA3OS42MjQ5IDM4LjM5MTUgODAuMjY3NkMzOC4zOTE1IDgxLjIzNTkgMzguNzM3MyA4MS45ODQ2IDM5LjQyOSA4Mi41MTM5QzQwLjEyMDcgODMuMDQzMSA0MC45ODg4IDgzLjMwNzQgNDIuMDMzMyA4My4zMDc0TDQyLjAzMjggODMuMzA4NloiIGZpbGw9IiNGRkZGRkYiLz4KPHBhdGggaWQ9IlZlY3Rvcl8xMSIgZD0iTTYyLjU0NzEgNzIuMTk2OEw2MC44NTU3IDcyLjY3NDJDNjAuNjg5NyA3Mi4xOTY4IDYwLjQ1NDUgNzEuNzY0OCA2MC4xNSA3MS4zNzc2QzU5Ljg0NTUgNzAuOTkwNCA1OS40NDk2IDcwLjY4MjQgNTguOTYyMyA3MC40NTQyQzU4LjQ3NDQgNzAuMjI1OSA1Ny44NzEyIDcwLjExMTggNTcuMTUxNSA3MC4xMTE4QzU2LjA3MjcgNzAuMTExOCA1NS4xODcxIDcwLjM2OCA1NC40OTU0IDcwLjg3OThDNTMuODAzNyA3MS4zOTE2IDUzLjQ1NzkgNzIuMDUyNCA1My40NTc5IDcyLjg2MTFDNTMuNDU3OSA3My41NDU4IDUzLjY5NDkgNzQuMTAwNyA1NC4xNjg4IDc0LjUyNjNDNTQuNjQyNyA3NC45NTE5IDU1LjM3NCA3NS4yODkgNTYuMzYzMiA3NS41Mzc2TDU4Ljc3MDEgNzYuMTI5MkM2MC4xMDUyIDc2LjQ1NCA2MS4xMDYgNzYuOTY5MyA2MS43NzM5IDc3LjY3NUM2Mi40NDExIDc4LjM4MDYgNjIuNzc1MyA3OS4yNjU2IDYyLjc3NTMgODAuMzMxMUM2Mi43NzUzIDgxLjIzMDYgNjIuNTI2MSA4Mi4wMjk1IDYyLjAyODMgODIuNzI3NUM2MS41MzA1IDgzLjQyNjIgNjAuNzIwNiA4My45NzQxIDU5LjgzMTUgODQuMzcxOEM1OC45NDI1IDg0Ljc2OTQgNTguMDMwMSA4NC45Njg1IDU2Ljg2MTYgODQuOTY4NUM1NS4zMDUzIDg0Ljk2ODUgNTQuMDIyMSA4NC42MTc1IDUzLjAxMjUgODMuOTE1M0M1Mi4wMDIzIDgzLjIxMzEgNTEuMzU2MSA4Mi4xOTgzIDUxLjA3MjUgODAuODcwMkw1Mi44NDY2IDgwLjQzNDdDNTMuMDc0OCA4MS4zODI2IDUzLjUyMjUgODIuMDk4MiA1NC4xOTAzIDgyLjU4MjZDNTQuODU3NiA4My4wNjcgNTUuNzM3OSA4My4zMDg2IDU2LjgzMDcgODMuMzA4NkM1OC4wNTUyIDgzLjMwODYgNTkuMDMzOSA4My4wMzM4IDU5Ljc2NjkgODIuNDgzNkM2MC40OTk5IDgxLjkzNCA2MC44NjY3IDgxLjI0NCA2MC44NjY3IDgwLjQxMzhDNjAuODY2NyA3OS43NzA0IDYwLjY1MjUgNzkuMjI5NSA2MC4yMjM0IDc4Ljc4OTlDNTkuNzk0MyA3OC4zNTA5IDU5LjE0NDUgNzguMDI3MiA1OC4yNzI5IDc3LjgxOTlMNTUuNjY4NiA3Ny4xOTc1QzU0LjI4NTIgNzYuODY1NyA1My4yNjE3IDc2LjMzOTkgNTIuNTk3OSA3NS42MjAzQzUxLjkzMzYgNzQuOTAxMiA1MS42MDE4IDc0LjAwODcgNTEuNjAxOCA3Mi45NDM4QzUxLjYwMTggNzIuMDY1MiA1MS44NDA1IDcxLjI5MjYgNTIuMzE3OSA3MC42MjQ4QzUyLjc5NTMgNjkuOTU3NSA1My40NTIxIDY5LjQzMzUgNTQuMjg5MyA2OS4wNTI4QzU1LjEyNiA2OC42NzI2IDU2LjA4MDggNjguNDgyMiA1Ny4xNTI3IDY4LjQ4MjJDNTguNjExOCA2OC40ODIyIDU5Ljc3OTEgNjguODEyMyA2MC42NTQyIDY5LjQ3MzFDNjEuNTI5MyA3MC4xMzQgNjIuMTYwNSA3MS4wNDE3IDYyLjU0NzYgNzIuMTk2OEg2Mi41NDcxWiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBpZD0iVmVjdG9yXzEyIiBkPSJNNzEuNzUyNSA4Mi45MjQ1QzcxLjYyMDkgODIuOTU5NCA3MS40Njg5IDgyLjk5MiA3MS4yOTYgODMuMDIyOUM3MS4xMjMxIDgzLjA1MzcgNzAuOTE1OCA4My4wNjk1IDcwLjY3MzYgODMuMDY5NUM3MC4yNTg1IDgzLjA2OTUgNjkuODY3OCA4Mi45OTE0IDY5LjUwMSA4Mi44MzZDNjkuMTM0MiA4Mi42ODA1IDY4LjgzNjcgODIuNDE0NSA2OC42MDg0IDgyLjAzNzJDNjguMzgwMiA4MS42NjA1IDY4LjI2NjEgODEuMTQgNjguMjY2MSA4MC40NzU2VjcwLjMwODJINzEuNjM3OFY2OC43MDAxSDY4LjI2NjFWNjQuODgxOEg2Ni40MDg4VjY4LjcwMDFINjQuMDMyN1Y3MC4zMDgySDY2LjQwODhWODAuOTExN0M2Ni40MDg4IDgxLjc4MzMgNjYuNjA5MSA4Mi41MTI5IDY3LjAxMDIgODMuMTAwOUM2Ny40MTE0IDgzLjY4OSA2Ny45MjQ5IDg0LjEzMTQgNjguNTUwOCA4NC40MjlDNjkuMTc2NyA4NC43MjY1IDY5LjgyODIgODQuODc1IDcwLjUwNjUgODQuODc1QzcwLjg5MzcgODQuODc1IDcxLjIxODYgODQuODQ1MyA3MS40ODE3IDg0Ljc4N0M3MS43NDQzIDg0LjcyODIgNzEuOTY1NiA4NC42NjQyIDcyLjE0NTUgODQuNTk0OUw3MS43NTEzIDgyLjkyNDVINzEuNzUyNVoiIGZpbGw9IiNGRkZGRkYiLz4KPHBhdGggaWQ9IlZlY3Rvcl8xMyIgZD0iTTc0Ljc3NzggODQuNjM2OFY2OC43MDA2SDc2LjU3MjhWNzEuMTQ4OUg3Ni43MDc5Qzc3LjAyNTggNzAuMzQ2NiA3Ny41ODEzIDY5LjY5OCA3OC4zNzMxIDY5LjIwMzdDNzkuMTY0OSA2OC43MDk0IDgwLjA2MjcgNjguNDYxOSA4MS4wNjUzIDY4LjQ2MTlDODEuMjE3MyA2OC40NjE5IDgxLjM4NjcgNjguNDY1NCA4MS41NzM2IDY4LjQ3MjRDODEuNzYwNSA2OC40Nzk0IDgxLjkxNTkgNjguNDg2NCA4Mi4wNDA1IDY4LjQ5MzRWNzAuMzcxQzgxLjk1NzkgNzAuMzU3MSA4MS44MTIzIDcwLjMzNjcgODEuNjA1IDcwLjMwODdDODEuMzk3OCA3MC4yODE0IDgxLjE3MjQgNzAuMjY3NCA4MC45MzA4IDcwLjI2NzRDODAuMTAwNiA3MC4yNjc0IDc5LjM2MjMgNzAuNDQyMSA3OC43MTYgNzAuNzkxNEM3OC4wNjkyIDcxLjE0MDcgNzcuNTU5MSA3MS42MjM0IDc3LjE4NTkgNzIuMjM4OEM3Ni44MTI3IDcyLjg1NDggNzYuNjI1OCA3My41NTY0IDc2LjYyNTggNzQuMzQ0N1Y4NC42MzY4SDc0Ljc3OUg3NC43Nzc4WiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBpZD0iVmVjdG9yXzE0IiBkPSJNOTQuMjY0OSA3OC41NDY3VjY4LjcwMDdIOTYuMTExOFY4NC42MzY4SDk0LjI2NDlWODEuOTkxMkg5NC4xMkM5My43NDY3IDgyLjgwNzUgOTMuMTU1MiA4My40ODY5IDkyLjM0NTkgODQuMDMwMkM5MS41MzY2IDg0LjU3MzQgOTAuNTQ3NCA4NC44NDQ3IDg5LjM3ODkgODQuODQ0N0M4OC4zNjIzIDg0Ljg0NDcgODcuNDU5MyA4NC42MjE3IDg2LjY3MDkgODQuMTc1N0M4NS44ODI2IDgzLjcyOTcgODUuMjYzMSA4My4wNzQxIDg0LjgxMzYgODIuMjA5NUM4NC4zNjQxIDgxLjM0NDkgODQuMTM5NCA4MC4yODM1IDg0LjEzOTQgNzkuMDI0MlY2OC43MDEzSDg1Ljk4NjJWNzguOTEwMUM4NS45ODYyIDgwLjE1NDkgODYuMzUyNSA4MS4xNTYzIDg3LjA4NjEgODEuOTEzOEM4Ny44MTkxIDgyLjY3MTIgODguNzYgODMuMDQ5NyA4OS45MDgxIDgzLjA0OTdDOTAuNjI3MiA4My4wNDk3IDkxLjMxODkgODIuODc2OCA5MS45ODMyIDgyLjUzMDlDOTIuNjQ2OSA4Mi4xODUxIDkzLjE5MzYgODEuNjc4NSA5My42MjIxIDgxLjAxMDdDOTQuMDUwNyA4MC4zNDM1IDk0LjI2NTUgNzkuNTIyIDk0LjI2NTUgNzguNTQ2N0g5NC4yNjQ5WiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBpZD0iVmVjdG9yXzE1IiBkPSJNMTA1LjkyOCA4NC45Njg3QzEwNC41MDMgODQuOTY4NyAxMDMuMjYzIDg0LjYxMjQgMTAyLjIwOCA4My45MDAzQzEwMS4xNTMgODMuMTg4MiAxMDAuMzM2IDgyLjIxMyA5OS43NTQ5IDgwLjk3NDZDOTkuMTczOCA3OS43MzY4IDk4Ljg4MzMgNzguMzI1NSA5OC44ODMzIDc2Ljc0MThDOTguODgzMyA3NS4xNTgxIDk5LjE3OTEgNzMuNzIzIDk5Ljc3MDYgNzIuNDc3NkMxMDAuMzYyIDcxLjIzMjggMTAxLjE4MyA3MC4yNTU4IDEwMi4yMzUgNjkuNTQ2NkMxMDMuMjg2IDY4LjgzNzUgMTA0LjUwNiA2OC40ODI5IDEwNS44OTcgNjguNDgyOUMxMDYuOTYyIDY4LjQ4MjkgMTA3LjkyNiA2OC42ODkgMTA4Ljc5MiA2OS4xMDAxQzEwOS42NTYgNjkuNTExNyAxMTAuMzcgNzAuMDg5MyAxMTAuOTM0IDcwLjgzMjhDMTExLjQ5OCA3MS41NzYzIDExMS44NTIgNzIuNDQyNiAxMTEuOTk4IDczLjQzMThIMTEwLjEzQzEwOS45MzYgNzIuNTMyOSAxMDkuNDcxIDcxLjc2MzIgMTA4LjczNSA3MS4xMjMzQzEwNy45OTggNzAuNDgzNCAxMDcuMDYyIDcwLjE2MzggMTA1LjkyOCA3MC4xNjM4QzEwNC45MTIgNzAuMTYzOCAxMDQuMDEyIDcwLjQzODYgMTAzLjIzMSA3MC45ODg4QzEwMi40NDkgNzEuNTM4NCAxMDEuODM5IDcyLjMwMjkgMTAxLjQgNzMuMjgxNkMxMDAuOTYgNzQuMjYwNCAxMDAuNzQxIDc1LjM5MjggMTAwLjc0MSA3Ni42Nzk1QzEwMC43NDEgNzcuOTY2MiAxMDAuOTU1IDc5LjExNjEgMTAxLjM4NCA4MC4xMDgzQzEwMS44MTIgODEuMTAxIDEwMi40MTYgODEuODc3MSAxMDMuMTk0IDgyLjQzNzJDMTAzLjk3MiA4Mi45OTczIDEwNC44ODQgODMuMjc3MyAxMDUuOTI4IDgzLjI3NzNDMTA2LjYzMyA4My4yNzczIDEwNy4yNzggODMuMTQ0IDEwNy44NjIgODIuODc3OUMxMDguNDQ3IDgyLjYxMTggMTA4LjkzOCA4Mi4yMzI4IDEwOS4zMzUgODEuNzQyQzEwOS43MzMgODEuMjUxMiAxMTAuMDAxIDgwLjY2NjYgMTEwLjE0IDc5Ljk4ODlIMTEyLjAwN0MxMTEuODY5IDgwLjk1MDIgMTExLjUyOCA4MS44MDYgMTEwLjk4NSA4Mi41NTY1QzExMC40NDIgODMuMzA3IDEwOS43NDEgODMuODk2OCAxMDguODggODQuMzI1M0MxMDguMDE4IDg0Ljc1MzggMTA3LjAzNCA4NC45Njg3IDEwNS45MjggODQuOTY4N1oiIGZpbGw9IiNGRkZGRkYiLz4KPHBhdGggaWQ9IlZlY3Rvcl8xNiIgZD0iTTEyMS4wNjYgODIuOTI0NUMxMjAuOTM1IDgyLjk1OTQgMTIwLjc4MyA4Mi45OTIgMTIwLjYxIDgzLjAyMjlDMTIwLjQzNyA4My4wNTM3IDEyMC4yMjkgODMuMDY5NSAxMTkuOTg3IDgzLjA2OTVDMTE5LjU3MiA4My4wNjk1IDExOS4xODEgODIuOTkxNCAxMTguODE1IDgyLjgzNkMxMTguNDQ4IDgyLjY4MDUgMTE4LjE1MSA4Mi40MTQ1IDExNy45MjMgODIuMDM3MkMxMTcuNjk0IDgxLjY2MDUgMTE3LjU4IDgxLjE0IDExNy41OCA4MC40NzU2VjcwLjMwODJIMTIwLjk1MlY2OC43MDAxSDExNy41OFY2NC44ODE4SDExNS43MjNWNjguNzAwMUgxMTMuMzQ3VjcwLjMwODJIMTE1LjcyM1Y4MC45MTE3QzExNS43MjMgODEuNzgzMyAxMTUuOTIzIDgyLjUxMjkgMTE2LjMyNSA4My4xMDA5QzExNi43MjYgODMuNjg5IDExNy4yNCA4NC4xMzE0IDExNy44NjYgODQuNDI5QzExOC40OTEgODQuNzI2NSAxMTkuMTQ0IDg0Ljg3NSAxMTkuODIxIDg0Ljg3NUMxMjAuMjA4IDg0Ljg3NSAxMjAuNTMzIDg0Ljg0NTMgMTIwLjc5NyA4NC43ODdDMTIxLjA1OSA4NC43MjgyIDEyMS4yOCA4NC42NjQyIDEyMS40NiA4NC41OTQ5TDEyMS4wNjYgODIuOTI0NVoiIGZpbGw9IiNGRkZGRkYiLz4KPHBhdGggaWQ9IlZlY3Rvcl8xNyIgZD0iTTEzMy41NzUgNzguNTQ2N1Y2OC43MDA3SDEzNS40MjJWODQuNjM2OEgxMzMuNTc1VjgxLjk5MTJIMTMzLjQzQzEzMy4wNTcgODIuODA3NSAxMzIuNDY1IDgzLjQ4NjkgMTMxLjY1NiA4NC4wMzAyQzEzMC44NDcgODQuNTczNCAxMjkuODU4IDg0Ljg0NDcgMTI4LjY4OSA4NC44NDQ3QzEyNy42NzMgODQuODQ0NyAxMjYuNzcgODQuNjIxNyAxMjUuOTgxIDg0LjE3NTdDMTI1LjE5MyA4My43Mjk3IDEyNC41NzMgODMuMDc0MSAxMjQuMTI0IDgyLjIwOTVDMTIzLjY3NCA4MS4zNDQ5IDEyMy40NSA4MC4yODM1IDEyMy40NSA3OS4wMjQyVjY4LjcwMTNIMTI1LjI5N1Y3OC45MTAxQzEyNS4yOTcgODAuMTU0OSAxMjUuNjYzIDgxLjE1NjMgMTI2LjM5NiA4MS45MTM4QzEyNy4xMjkgODIuNjcxMiAxMjguMDcgODMuMDQ5NyAxMjkuMjE4IDgzLjA0OTdDMTI5LjkzNyA4My4wNDk3IDEzMC42MjkgODIuODc2OCAxMzEuMjkzIDgyLjUzMDlDMTMxLjk1NyA4Mi4xODUxIDEzMi41MDQgODEuNjc4NSAxMzIuOTMzIDgxLjAxMDdDMTMzLjM2MiA4MC4zNDM1IDEzMy41NzYgNzkuNTIyIDEzMy41NzYgNzguNTQ2N0gxMzMuNTc1WiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBpZD0iVmVjdG9yXzE4IiBkPSJNMTM5LjM1OCA4NC42MzY4VjY4LjcwMDZIMTQxLjE1M1Y3MS4xNDg5SDE0MS4yODhDMTQxLjYwNiA3MC4zNDY2IDE0Mi4xNjEgNjkuNjk4IDE0Mi45NTMgNjkuMjAzN0MxNDMuNzQ1IDY4LjcwOTQgMTQ0LjY0MyA2OC40NjE5IDE0NS42NDUgNjguNDYxOUMxNDUuNzk3IDY4LjQ2MTkgMTQ1Ljk2NyA2OC40NjU0IDE0Ni4xNTQgNjguNDcyNEMxNDYuMzQxIDY4LjQ3OTQgMTQ2LjQ5NiA2OC40ODY0IDE0Ni42MjEgNjguNDkzNFY3MC4zNzFDMTQ2LjUzOCA3MC4zNTcxIDE0Ni4zOTIgNzAuMzM2NyAxNDYuMTg1IDcwLjMwODdDMTQ1Ljk3OCA3MC4yODE0IDE0NS43NTMgNzAuMjY3NCAxNDUuNTExIDcwLjI2NzRDMTQ0LjY4MSA3MC4yNjc0IDE0My45NDIgNzAuNDQyMSAxNDMuMjk2IDcwLjc5MTRDMTQyLjY0OSA3MS4xNDA3IDE0Mi4xMzkgNzEuNjIzNCAxNDEuNzY2IDcyLjIzODhDMTQxLjM5MyA3Mi44NTQ4IDE0MS4yMDYgNzMuNTU2NCAxNDEuMjA2IDc0LjM0NDdWODQuNjM2OEgxMzkuMzU5SDEzOS4zNThaIiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGlkPSJWZWN0b3JfMTkiIGQ9Ik0xNjAuNzIzIDc2LjMwNTZDMTYwLjcyMyA3NC45NzA1IDE2MC41MzcgNzMuODEzNiAxNjAuMTYzIDcyLjgzNDlDMTU5Ljc5IDcxLjg1NjIgMTU5LjI4MyA3MS4wNDM0IDE1OC42NDMgNzAuMzk2NUMxNTguMDAzIDY5Ljc0OTcgMTU3LjI4MiA2OS4yNjkzIDE1Ni40OCA2OC45NTQ0QzE1NS42NzggNjguNjQgMTU0Ljg0NCA2OC40ODIyIDE1My45NzkgNjguNDgyMkMxNTIuNjAzIDY4LjQ4MjIgMTUxLjM5MSA2OC44MzY4IDE1MC4zNDMgNjkuNTQ1OUMxNDkuMjk1IDcwLjI1NTEgMTQ4LjQ3NSA3MS4yMzM4IDE0Ny44ODQgNzIuNDgyMUMxNDcuMjkzIDczLjczMSAxNDYuOTk3IDc1LjE1NzQgMTQ2Ljk5NyA3Ni43NjJDMTQ2Ljk5NyA3OC4zNjY3IDE0Ny4yOTMgNzkuNzk2NiAxNDcuODg0IDgxLjAzMTVDMTQ4LjQ3NiA4Mi4yNjY0IDE0OS4zMTQgODMuMjMxMiAxNTAuNCA4My45MjYzQzE1MS40ODYgODQuNjIxNSAxNTIuNzczIDg0Ljk2OTEgMTU0LjI2IDg0Ljk2OTFDMTU1LjMyNCA4NC45NjkxIDE1Ni4yNjcgODQuNzk3OSAxNTcuMDg3IDg0LjQ1NTZDMTU3LjkwNyA4NC4xMTMyIDE1OC41OTEgODMuNjU4NSAxNTkuMTQxIDgzLjA5MTRDMTU5LjY5MSA4Mi41MjQzIDE2MC4wODYgODEuOTA1NCAxNjAuMzI5IDgxLjIzNDFMMTU4LjU3NiA4MC42NjM1QzE1OC4zNzUgODEuMTQxIDE1OC4wOCA4MS41NzgyIDE1Ny42ODggODEuOTc1OUMxNTcuMjk4IDgyLjM3MzUgMTU2LjgxNyA4Mi42OTAzIDE1Ni4yNDYgODIuOTI0OUMxNTUuNjc2IDgzLjE2MDEgMTU1LjAxMyA4My4yNzc3IDE1NC4yNiA4My4yNzc3QzE1My4xNTMgODMuMjc3NyAxNTIuMTk1IDgzLjAxODEgMTUxLjM4NiA4Mi40OTk5QzE1MC41NzYgODEuOTgxMSAxNDkuOTUyIDgxLjI0OTkgMTQ5LjUxMyA4MC4zMDU1QzE0OS4xIDc5LjQxODcgMTQ4Ljg4MiA3OC4zODk5IDE0OC44NTcgNzcuMjE5MUgxNjAuNzIzVjc2LjMwNjJWNzYuMzA1NlpNMTQ4Ljg2OSA3NS41ODk0QzE0OC45MjUgNzQuNzAxIDE0OS4xMzkgNzMuODc0MiAxNDkuNTEzIDczLjEwOTdDMTQ5Ljk0NSA3Mi4yMjQ3IDE1MC41NDYgNzEuNTEyMSAxNTEuMzEzIDcwLjk3MjRDMTUyLjA4MSA3MC40MzI2IDE1Mi45NyA3MC4xNjMxIDE1My45OCA3MC4xNjMxQzE1NC45MzQgNzAuMTYzMSAxNTUuNzc3IDcwLjQwMTggMTU2LjUwNiA3MC44NzkyQzE1Ny4yMzYgNzEuMzU2NiAxNTcuODA2IDcyLjAwNDcgMTU4LjIxOCA3Mi44MjQ0QzE1OC42MyA3My42NDQyIDE1OC44MzUgNzQuNTY1OSAxNTguODM1IDc1LjU4OTRIMTQ4Ljg2OVoiIGZpbGw9IiNGRkZGRkYiLz4KPC9nPgo8cGF0aCBpZD0iVmVjdG9yXzIwIiBkPSJNMjI3LjY4NCAwTDE5NC4xMjcgMzMuNTk5MkgxNDYuNjIxVjM4LjYxOEgxOTIuNjM5Vjg0LjYzNjdIMTk3LjY1OFYzNy4xMjkyTDIzMS4yNTcgMy41MzAwNUwyMjcuNjg0IDBaIiBmaWxsPSIjQkNGMTAwIi8+CjwvZz4KPC9zdmc+Cg==" alt="Beale Infrastructure" style="height:55px;">
+      </div>
+      <div class="header-center">
+        <div class="header-title">Floyd KC Data Center Development Program</div>
+      </div>
+      <div class="header-right">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <img src="data:image/webp;base64,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" alt="PGCIS" class="header-pgcis-logo">
+          <div class="header-credit">Powered by PACHYDERM GLOBAL</div>
+        </div>
+      </div>
+    </div>
+    <div class="page-nav">
+      <div class="page-nav-inner">
+        <div class="page-nav-item">Program Directory</div>
+        <div class="page-nav-item inactive">Performance Dashboards</div>
+        <div class="page-nav-item inactive">Program Schedule</div>
+      </div>
+    </div>`;
+}
+
+function getLeadsForOrg(data, workstreamName, org) {
+  return data.assignments.filter(a =>
+    a.workstream === workstreamName &&
+    (a.role === 'Lead' || a.role === 'Co-Lead')
+  ).map(a => {
+    const person = data.team.find(t => t.name === a.person && t.org === org);
+    return person ? { ...person, assignmentRole: a.role, note: a.note } : null;
+  }).filter(Boolean);
+}
+
+function getSupportForOrg(data, workstreamName, org) {
+  return data.assignments.filter(a =>
+    a.workstream === workstreamName &&
+    (a.role === 'Peer Reviewer' || a.role === 'Support')
+  ).map(a => {
+    const person = data.team.find(t => t.name === a.person && t.org === org);
+    return person ? { ...person, note: a.note } : null;
+  }).filter(Boolean);
+}
+
+function showContact(name) {
+  if (!directoryData) return;
+  const person = directoryData.team.find(t => t.name === name);
+  if (!person) return;
+
+  const orgClass = person.org === 'Beale' ? 'beale' : 'pgcis';
+  const orgLabel = person.org === 'Beale' ? 'BEALE INFRASTRUCTURE' : 'PGCIS';
+
+  const html = `
+    <div class="contact-overlay" onclick="if(event.target===this)this.remove()">
+      <div class="contact-card">
+        <button class="close-btn" onclick="this.closest('.contact-overlay').remove()">&times;</button>
+        <div class="org-badge ${orgClass}">${orgLabel}</div>
+        <div class="contact-name">${person.name}</div>
+        <div class="contact-title">${person.title}</div>
+        <div class="contact-info">
+          ${person.email ? `<div class="contact-row"><div class="contact-icon">&#9993;</div><a href="mailto:${person.email}">${person.email}</a></div>` : ''}
+          ${person.phone ? `<div class="contact-row"><div class="contact-icon">&#9742;</div><a href="tel:${person.phone.replace(/[^+\d]/g, '')}">${person.phone}</a></div>` : ''}
+          ${person.role_description ? `<div class="contact-row"><div class="contact-icon">&#9881;</div><div>${person.role_description}</div></div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+// Expose globally for onclick handlers
+window.showContact = showContact;
+
+function renderLeadCard(person) {
+  const badgeClass = person.assignmentRole === 'Co-Lead' ? 'co-lead' : 'lead';
+  const noteText = person.note ? ` (${person.note})` : '';
+  return `
+    <div class="lead-card" onclick="showContact('${escapeAttr(person.name)}')">
+      <div class="name">${person.name}${noteText}</div>
+      <div class="title">${person.title}</div>
+      <div class="role-badge ${badgeClass}">${person.assignmentRole}</div>
+    </div>`;
+}
+
+function renderPill(person) {
+  const noteText = person.note ? ` (${person.note})` : '';
+  return `<div class="pill" onclick="showContact('${escapeAttr(person.name)}')">${person.name}${noteText}</div>`;
+}
+
+function renderAccordionItem(ws, data) {
+  const bealeLeads = getLeadsForOrg(data, ws.name, 'Beale');
+  const pgcisLeads = getLeadsForOrg(data, ws.name, 'PGCIS');
+  const bealeSupport = getSupportForOrg(data, ws.name, 'Beale');
+  const pgcisSupport = getSupportForOrg(data, ws.name, 'PGCIS');
+  const wsDeliverables = data.deliverables.filter(d => d.workstream === ws.name);
+  const completeCount = wsDeliverables.filter(d => d.status === 'Complete').length;
+
+  // Header lead names
+  const bealeLeadName = bealeLeads.length > 0
+    ? bealeLeads.map(l => l.name).join(' + ')
+    : 'TBD';
+  const pgcisLeadName = pgcisLeads.length > 0
+    ? pgcisLeads.map(l => l.name).join(' + ')
+    : 'TBD';
+  const bealeNameClass = bealeLeads.length > 0 ? 'accordion-meta-name' : 'accordion-meta-name tbd';
+  const pgcisNameClass = pgcisLeads.length > 0 ? 'accordion-meta-name' : 'accordion-meta-name tbd';
+
+  // Beale TBD pills
+  let bealeTbdPills = '';
+  if (bealeLeads.length === 0) {
+    bealeTbdPills = '<div class="pill tbd">TBD - Beale to designate Lead</div>';
+  }
+  if (bealeSupport.length === 0 && bealeLeads.length > 0) {
+    bealeTbdPills = '<div class="pill tbd">TBD - Beale to designate</div>';
+  }
+  if (bealeLeads.length === 0 && bealeSupport.length === 0) {
+    bealeTbdPills += '<div class="pill tbd">TBD - Beale to designate Support</div>';
+  }
+
+  // Deliverable status class
+  function statusClass(status) {
+    if (status === 'Complete') return 'complete';
+    if (status === 'In Progress') return 'in-progress';
+    return 'not-started';
+  }
+
+  return `
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="this.classList.toggle('active');this.nextElementSibling.classList.toggle('open');">
+        <div class="accordion-arrow">&#9654;</div>
+        <div class="accordion-ws-name">${ws.name}</div>
+        <div class="accordion-meta">
+          <div><div class="accordion-meta-label">Beale Lead</div><div class="${bealeNameClass}">${bealeLeadName}</div></div>
+          <div><div class="accordion-meta-label">PGCIS Lead</div><div class="${pgcisNameClass}">${pgcisLeadName}</div></div>
+        </div>
+      </div>
+      <div class="accordion-body">
+        <!-- Responsible Parties -->
+        <div class="team-section">
+          <div class="team-label">Beale Infrastructure</div>
+          ${bealeLeads.length > 0 ? `<div class="team-grid">${bealeLeads.map(renderLeadCard).join('')}</div>` : ''}
+          <div class="pills">
+            ${bealeSupport.map(renderPill).join('')}
+            ${bealeTbdPills}
+          </div>
+        </div>
+        <div class="team-section">
+          <div class="team-label pgcis">PGCIS</div>
+          ${pgcisLeads.length > 0 ? `<div class="team-grid">${pgcisLeads.map(renderLeadCard).join('')}</div>` : ''}
+          <div class="pills">${pgcisSupport.map(renderPill).join('')}</div>
+        </div>
+
+        <!-- Scope -->
+        <div class="section-divider">Work-stream Scope</div>
+        <div class="scope-box">
+          <div class="scope-text">${ws.scope}</div>
+          ${ws.proposal_ref ? `<div class="proposal-ref">Proposal Reference: ${ws.proposal_ref}</div>` : ''}
+        </div>
+
+        <!-- Deliverables -->
+        ${wsDeliverables.length > 0 ? `
+        <div class="section-divider">Deliverables</div>
+        <div class="deliverables-box">
+          <div class="deliverables-header">
+            <span></span>
+            <span class="deliverables-count">${completeCount} of ${wsDeliverables.length} complete</span>
+          </div>
+          ${wsDeliverables.map(d => `
+            <div class="deliverable-row">
+              <div class="deliverable-status ${statusClass(d.status)}"></div>
+              <div class="deliverable-name">${d.deliverable}</div>
+              <div class="deliverable-phase">${d.phase}</div>
+            </div>
+          `).join('')}
+          <div class="deliverables-legend">
+            <div class="legend-item"><div class="deliverable-status not-started"></div> Not Started</div>
+            <div class="legend-item"><div class="deliverable-status in-progress"></div> In Progress</div>
+            <div class="legend-item"><div class="deliverable-status complete"></div> Complete</div>
+          </div>
+        </div>` : ''}
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+async function init() {
+  const app = document.getElementById('app');
+
+  try {
+    const data = await loadAllData();
+    directoryData = data;
+
+    const sortedWorkstreams = [...data.workstreams].sort((a, b) => Number(a.order) - Number(b.order));
+
+    app.innerHTML = `
+      ${renderHeader()}
+      <div class="container">
+        ${sortedWorkstreams.map(ws => renderAccordionItem(ws, data)).join('')}
+      </div>
+      <div class="footer">
+        Floyd KC Program Directory | Beale Infrastructure + PACHYDERM GLOBAL Critical Infrastructure Services<br>
+        <span style="font-size:10px;color:#bbb;">Confidential - For authorized personnel only</span>
+      </div>`;
+  } catch (error) {
+    app.innerHTML = '<div style="text-align:center;padding:60px;color:#cc0000;">Error loading directory. Please refresh or contact benton@pgcis.com.</div>';
+    console.error('Directory load error:', error);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
