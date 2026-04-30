@@ -241,8 +241,8 @@ const FALLBACK_SETTINGS = {
 
 let settings;
 try {
-  const parsed = JSON.parse(<?!= JSON.stringify(JSON.parse(settings)) ?>);
-  settings = (parsed && parsed.program_name) ? parsed : FALLBACK_SETTINGS;
+  settings = <?!= settings ?>;
+  if (!settings || !settings.program_name) settings = FALLBACK_SETTINGS;
 } catch(e) {
   settings = FALLBACK_SETTINGS;
 }
