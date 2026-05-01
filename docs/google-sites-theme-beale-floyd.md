@@ -42,9 +42,9 @@ that theme into future client Sites.
 
 ## Page Structure
 
-- Preferred header approach: insert `assets/google-sites-header-beale-floyd.png`
-  at the top of each Google Sites page or use it as the page header image when the
-  crop behavior is acceptable.
+- Preferred header approach: use `assets/google-sites-header-beale-floyd.png` as
+  brand-only header chrome, then add the page/program title using Google Sites text
+  or page-header controls so titles remain editable per client and per page.
 - Home: embed Apps Script URL without a page parameter, or with `?page=directory`
 - Program Schedule: embed Apps Script URL with `?page=schedule`
 - Future pages: add Sites-level navigation pages first, then embed purpose-built
