@@ -45,3 +45,7 @@ than inside the embedded Apps Script widget. See
 `docs/google-sites-theme-beale-floyd.md` for the Beale theme settings and logo
 asset references, including the transparent common header image for use on a Sites
 managed dark background.
+
+For future client dashboards, use
+`docs/google-sites-dashboard-reuse-pattern.md` as the reusable architecture and
+security checklist.
