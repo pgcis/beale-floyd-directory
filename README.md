@@ -43,4 +43,5 @@ web app deployment and Google Sites sharing settings, not by static hosting.
 The Google Sites header, logo, and navigation should be configured in Sites rather
 than inside the embedded Apps Script widget. See
 `docs/google-sites-theme-beale-floyd.md` for the Beale theme settings and logo
-asset references.
+asset references, including the transparent common header image for use on a Sites
+managed dark background.

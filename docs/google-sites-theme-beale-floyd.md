@@ -7,7 +7,8 @@ that theme into future client Sites.
 
 ## Brand Assets
 
-- Full common header image: `assets/google-sites-header-beale-floyd.png`
+- Transparent common header image: `assets/google-sites-header-beale-floyd-transparent.png`
+- Dark common header image: `assets/google-sites-header-beale-floyd.png`
 - Logo for dark header: `assets/beale-logo-dark-header.png`
 - Editable logo source: `assets/beale-logo-dark-header.svg`
 - Logo treatment: white Beale wordmark, Beale green windmill
@@ -42,9 +43,13 @@ that theme into future client Sites.
 
 ## Page Structure
 
-- Preferred header approach: use `assets/google-sites-header-beale-floyd.png` as
-  brand-only header chrome, then add the page/program title using Google Sites text
-  or page-header controls so titles remain editable per client and per page.
+- Preferred header approach: use
+  `assets/google-sites-header-beale-floyd-transparent.png` as brand-only header
+  chrome on top of a dark Google Sites section/header background, then add the
+  page/program title using Google Sites text or page-header controls so titles
+  remain editable per client and per page.
+- Fallback header approach: use `assets/google-sites-header-beale-floyd.png`
+  when Sites cannot provide a suitable dark background.
 - Home: embed Apps Script URL without a page parameter, or with `?page=directory`
 - Program Schedule: embed Apps Script URL with `?page=schedule`
 - Future pages: add Sites-level navigation pages first, then embed purpose-built
