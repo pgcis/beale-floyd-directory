@@ -187,13 +187,22 @@
   }
 
   .contact-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.4); display: flex; align-items: center;
-    justify-content: center; z-index: 100;
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: rgba(26,35,50,0.08); z-index: 100;
   }
   .contact-card {
     background: #fff; border-radius: 12px; padding: 28px 32px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.15); max-width: 380px; width: 100%; position: relative;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18); max-width: 380px; width: calc(100% - 32px);
+    position: absolute; border: 1px solid #e8ecf0;
+  }
+  .contact-card::before {
+    content: ""; position: absolute; top: -9px; left: var(--arrow-left, 24px);
+    width: 16px; height: 16px; background: #fff; border-left: 1px solid #e8ecf0;
+    border-top: 1px solid #e8ecf0; transform: rotate(45deg);
+  }
+  .contact-card.above-trigger::before {
+    top: auto; bottom: -9px; border-left: none; border-top: none;
+    border-right: 1px solid #e8ecf0; border-bottom: 1px solid #e8ecf0;
   }
   .contact-card .org-badge {
     font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
@@ -503,7 +512,74 @@ function getSupportForOrg(data, workstreamName, org) {
   }).filter(Boolean);
 }
 
-function showContact(name) {
+function closeContact() {
+  document.querySelectorAll('.contact-overlay').forEach(overlay => overlay.remove());
+  document.removeEventListener('keydown', handleContactEscape);
+}
+
+function handleContactEscape(event) {
+  if (event.key === 'Escape') closeContact();
+}
+
+function getDocumentHeight() {
+  return Math.max(
+    document.body.scrollHeight,
+    document.body.offsetHeight,
+    document.documentElement.clientHeight,
+    document.documentElement.scrollHeight,
+    document.documentElement.offsetHeight
+  );
+}
+
+function clampNumber(value, min, max) {
+  if (max < min) return min;
+  return Math.min(Math.max(value, min), max);
+}
+
+function positionContactCard(card, triggerElement) {
+  const margin = 16;
+  const cardWidth = card.offsetWidth || 380;
+  const cardHeight = card.offsetHeight || 260;
+  const scrollX = window.pageXOffset || document.documentElement.scrollLeft || 0;
+  const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+  let top = scrollY + 24;
+  let left = scrollX + Math.max(margin, (viewportWidth - cardWidth) / 2);
+  let arrowLeft = 24;
+
+  if (triggerElement && triggerElement.getBoundingClientRect) {
+    const triggerRect = triggerElement.getBoundingClientRect();
+    top = scrollY + triggerRect.bottom + 12;
+    left = scrollX + triggerRect.left + (triggerRect.width / 2) - (cardWidth / 2);
+
+    const topIfPlacedAbove = scrollY + triggerRect.top - cardHeight - 12;
+    const viewportBottom = scrollY + viewportHeight;
+    if (top + cardHeight + margin > viewportBottom && topIfPlacedAbove >= scrollY + margin) {
+      top = topIfPlacedAbove;
+      card.classList.add('above-trigger');
+    }
+
+    left = clampNumber(
+      left,
+      scrollX + margin,
+      scrollX + viewportWidth - cardWidth - margin
+    );
+    top = Math.max(top, margin);
+    arrowLeft = clampNumber(
+      scrollX + triggerRect.left + (triggerRect.width / 2) - left - 8,
+      18,
+      cardWidth - 34
+    );
+  }
+
+  card.style.left = `${Math.round(left)}px`;
+  card.style.top = `${Math.round(top)}px`;
+  card.style.setProperty('--arrow-left', `${Math.round(arrowLeft)}px`);
+}
+
+function showContact(name, triggerElement) {
   if (!directoryData) return;
   const person = directoryData.team.find(t => t.name === name);
   if (!person) return;
@@ -511,10 +587,14 @@ function showContact(name) {
   const orgClass = person.org === 'Beale' ? 'beale' : 'pgcis';
   const orgLabel = person.org === 'Beale' ? 'BEALE INFRASTRUCTURE' : 'PGCIS';
 
-  const html = `
-    <div class="contact-overlay" onclick="if(event.target===this)this.remove()">
+  closeContact();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'contact-overlay';
+  overlay.style.height = `${getDocumentHeight()}px`;
+  overlay.innerHTML = `
       <div class="contact-card">
-        <button class="close-btn" onclick="this.closest('.contact-overlay').remove()">&times;</button>
+        <button class="close-btn" type="button" aria-label="Close contact details">&times;</button>
         <div class="org-badge ${orgClass}">${orgLabel}</div>
         <div class="contact-name">${person.name}</div>
         <div class="contact-title">${person.title}</div>
@@ -524,8 +604,17 @@ function showContact(name) {
           ${person.role_description ? `<div class="contact-row"><div class="contact-icon">&#9881;</div><div>${person.role_description}</div></div>` : ''}
         </div>
       </div>
-    </div>`;
-  document.body.insertAdjacentHTML('beforeend', html);
+    `;
+
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) closeContact();
+  });
+  document.body.appendChild(overlay);
+
+  const card = overlay.querySelector('.contact-card');
+  overlay.querySelector('.close-btn').addEventListener('click', closeContact);
+  positionContactCard(card, triggerElement);
+  document.addEventListener('keydown', handleContactEscape);
 }
 
 // Expose globally for onclick handlers
@@ -535,7 +624,7 @@ function renderLeadCard(person) {
   const badgeClass = person.assignmentRole === 'Co-Lead' ? 'co-lead' : 'lead';
   const noteText = person.note ? ` (${person.note})` : '';
   return `
-    <div class="lead-card" onclick="showContact('${escapeAttr(person.name)}')">
+    <div class="lead-card" onclick="showContact('${escapeAttr(person.name)}', this)">
       <div class="name">${person.name}${noteText}</div>
       <div class="title">${person.title}</div>
       <div class="role-badge ${badgeClass}">${person.assignmentRole}</div>
@@ -544,7 +633,7 @@ function renderLeadCard(person) {
 
 function renderPill(person) {
   const noteText = person.note ? ` (${person.note})` : '';
-  return `<div class="pill" onclick="showContact('${escapeAttr(person.name)}')">${person.name}${noteText}</div>`;
+  return `<div class="pill" onclick="showContact('${escapeAttr(person.name)}', this)">${person.name}${noteText}</div>`;
 }
 
 function renderAccordionItem(ws, data) {
