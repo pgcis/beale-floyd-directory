@@ -185,6 +185,8 @@
   .detail-card .status-badge.delayed { background: #f44336; }
   .detail-card .status-badge.complete { background: #4caf50; }
   .detail-card .detail-name { font-size: 18px; font-weight: 700; color: var(--primary); }
+  .detail-card a.detail-name { color: var(--primary); text-decoration: none; border-bottom: 1px dashed var(--primary); cursor: pointer; }
+  .detail-card a.detail-name:hover { color: #2196F3; border-bottom-color: #2196F3; }
   .detail-card .detail-meta { margin-top: 12px; font-size: 13px; }
   .detail-card .detail-row { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f0f2f4; }
   .detail-card .detail-row:last-child { border-bottom: none; }
@@ -417,16 +419,7 @@ function isEmbeddedInGoogleSites() {
 }
 
 function renderPageNav() {
-  if (isEmbeddedInGoogleSites()) return '';
-
-  return `
-    <div class="page-nav">
-      <div class="page-nav-inner">
-        <a href="?page=directory" class="page-nav-item ${currentPage === 'directory' ? 'active' : ''}" style="${currentPage === 'directory' ? 'border-bottom-color:var(--accent);' : ''}">Program Directory</a>
-        <a href="?page=schedule" class="page-nav-item ${currentPage === 'schedule' ? 'active' : ''}" style="${currentPage === 'schedule' ? 'border-bottom-color:var(--accent);' : ''}">Program Schedule</a>
-        <div class="page-nav-item inactive">Performance Dashboards</div>
-      </div>
-    </div>`;
+  return '';
 }
 
 function shouldPreserveClientLogoAccent() {
@@ -454,24 +447,7 @@ function renderClientLogo() {
 }
 
 function renderHeader() {
-  if (isEmbeddedInGoogleSites()) return '';
-
-  return `
-    <div class="header" style="background:linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);">
-      <div class="header-left">
-        ${renderClientLogo()}
-      </div>
-      <div class="header-center">
-        <div class="header-title">${settings.program_name}</div>
-      </div>
-      <div class="header-right">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-          <img src="${settings.pgcis_logo_url}" alt="PGCIS" class="header-pgcis-logo">
-          <div class="header-credit">Powered by PACHYDERM GLOBAL</div>
-        </div>
-      </div>
-    </div>
-    ${renderPageNav()}`;
+  return '';
 }
 
 function renderFooter() {
@@ -624,17 +600,17 @@ function showDetail(type, index) {
     metaRows += `<div class="detail-row"><div class="detail-label">Notes</div><div class="detail-value">${escapeHtml(item.Notes)}</div></div>`;
   }
 
-  const docLink = item['Doc Link'] || '';
-  if (docLink && docLink.trim()) {
-    metaRows += `<div class="detail-row"><div class="detail-label">Document</div><div class="detail-value"><a href="${escapeHtml(docLink)}" target="_blank" class="detail-link">Open in Google Drive</a></div></div>`;
-  }
+  const docLink = (item['Doc Link'] || '').trim();
+  const titleHtml = docLink
+    ? `<a href="${escapeHtml(docLink)}" target="_blank" rel="noopener" class="detail-name" title="Open deliverable folder in Google Drive">${escapeHtml(item.Name)}</a>`
+    : `<div class="detail-name">${escapeHtml(item.Name)}</div>`;
 
   const html = `
     <div class="detail-overlay" onclick="if(event.target===this)this.remove()">
       <div class="detail-card">
         <button class="close-btn" onclick="this.closest('.detail-overlay').remove()">&times;</button>
         <div class="status-badge ${sc}">${escapeHtml(statusLabel)}</div>
-        <div class="detail-name">${escapeHtml(item.Name)}</div>
+        ${titleHtml}
         <div class="detail-meta">${metaRows}</div>
       </div>
     </div>`;
