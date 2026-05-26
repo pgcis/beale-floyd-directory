@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floyd KC - Risk Register</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  :root {
+    --primary: #1a2332;
+    --accent: #BCF100;
+    --secondary: #2c3e50;
+    --pgcis: #2e7d32;
+    --very-high: #c62828;
+    --high: #ef6c00;
+    --medium: #f9a825;
+    --low: #2e7d32;
+  }
+
+  .container { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
+
+  .page-intro {
+    background: #fff; border: 1px solid #e8ecf0; border-radius: 8px;
+    padding: 16px 20px; margin-bottom: 16px;
+  }
+  .page-intro h1 {
+    font-size: 18px; color: var(--primary); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.6px;
+  }
+  .page-intro p { font-size: 13px; color: #556677; line-height: 1.5; }
+
+  .controls {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; padding: 12px 16px; background: #fff;
+    border-radius: 8px; border: 1px solid #e8ecf0; gap: 16px; flex-wrap: wrap;
+  }
+  .controls-left { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .filter-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #889; font-weight: 600; }
+  .filter-chip {
+    padding: 5px 12px; border: 1px solid #dde1e6; border-radius: 14px;
+    background: #fff; color: #445566; font-size: 12px; cursor: pointer;
+    font-weight: 500; transition: all 0.15s;
+  }
+  .filter-chip:hover { border-color: var(--primary); }
+  .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .search-box {
+    padding: 6px 12px; border: 1px solid #dde1e6; border-radius: 6px;
+    font-size: 13px; min-width: 220px;
+  }
+
+  .risk-group {
+    background: #fff; border-radius: 8px; border: 1px solid #e8ecf0;
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .risk-group-header {
+    padding: 10px 16px; font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    color: #fff; display: flex; justify-content: space-between; align-items: center;
+  }
+  .risk-group-header.very-high { background: linear-gradient(135deg, var(--very-high) 0%, #8e1818 100%); }
+  .risk-group-header.high { background: linear-gradient(135deg, var(--high) 0%, #b04500 100%); }
+  .risk-group-header.medium { background: linear-gradient(135deg, var(--medium) 0%, #b76e00 100%); }
+  .risk-group-header.low { background: linear-gradient(135deg, var(--low) 0%, #1b5e20 100%); }
+  .risk-group-count { font-size: 11px; font-weight: 500; opacity: 0.9; text-transform: none; letter-spacing: 0; }
+
+  .risk-card {
+    padding: 14px 16px; border-bottom: 1px solid #f0f2f4;
+  }
+  .risk-card:last-of-type { border-bottom: none; }
+
+  .risk-card-top {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+    margin-bottom: 8px;
+  }
+  .risk-id-name { flex: 1; }
+  .risk-id {
+    display: inline-block; font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 11px; color: #889; margin-right: 10px;
+  }
+  .risk-name { display: inline; font-size: 15px; font-weight: 600; color: var(--primary); }
+
+  .risk-score-block {
+    text-align: right; flex-shrink: 0;
+  }
+  .risk-score-number {
+    font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1;
+  }
+  .risk-score-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: #889;
+    margin-top: 2px;
+  }
+
+  .risk-chips {
+    display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0;
+  }
+  .risk-chip {
+    padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 500;
+    background: #eef1f4; color: #445566;
+  }
+  .risk-chip.cx-impact { background: #e8f4fd; color: #1565c0; border: 1px solid #bbdefb; }
+  .risk-chip.status-not-started { background: #f5f5f5; color: #666; }
+  .risk-chip.status-in-progress { background: #e3f2fd; color: #1565c0; }
+  .risk-chip.status-complete { background: #e8f5e9; color: #2e7d32; }
+  .risk-chip.status-blocked { background: #ffebee; color: #c62828; }
+
+  .risk-description {
+    font-size: 13px; color: #334; line-height: 1.55; margin-top: 6px;
+  }
+
+  .risk-meta {
+    display: flex; gap: 18px; flex-wrap: wrap; margin-top: 8px;
+    font-size: 11px; color: #778;
+  }
+  .risk-meta-item { display: flex; gap: 4px; }
+  .risk-meta-label { color: #99a; }
+  .risk-meta-value { color: #334; font-weight: 500; }
+
+  .mitigation-toggle {
+    margin-top: 10px; padding: 6px 10px; background: #f5f7f9;
+    border: 1px solid #e0e4e8; border-radius: 4px;
+    font-size: 11px; color: var(--primary); cursor: pointer; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .mitigation-toggle:hover { background: #eef1f4; }
+  .mitigation-body {
+    display: none; margin-top: 8px; padding: 10px 12px;
+    background: #fafbfc; border: 1px solid #eef0f2; border-radius: 4px;
+    font-size: 12px; color: #334; line-height: 1.6; white-space: pre-wrap;
+  }
+  .mitigation-body.open { display: block; }
+
+  .empty-state {
+    background: #fff; border: 1px dashed #c5cbd1; border-radius: 8px;
+    padding: 40px 24px; text-align: center; color: #889;
+  }
+  .empty-state h2 { font-size: 16px; color: var(--primary); margin-bottom: 6px; font-weight: 600; }
+  .empty-state p { font-size: 13px; line-height: 1.5; }
+
+  .footer {
+    text-align: center; padding: 20px; color: #889; font-size: 12px;
+    border-top: 1px solid #e8ecf0; margin-top: 24px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const FALLBACK_SETTINGS = {
+  program_name: 'Floyd KC Data Center Development Program',
+  client_name: 'Beale Infrastructure',
+  client_logo_url: '',
+  pgcis_logo_url: 'https://lh3.googleusercontent.com/d/1SvJPW5By4yRtWjnfirQbBrWUCk4noo2c',
+  primary_color: '#1a2332',
+  accent_color: '#BCF100',
+  secondary_color: '#2c3e50',
+  pgcis_color: '#2e7d32',
+  footer_text: 'Beale Infrastructure + PACHYDERM GLOBAL Critical Infrastructure Services',
+  confidentiality_notice: 'Confidential - For authorized personnel only',
+  client_logo_invert: 'true'
+};
+
+let settings;
+try {
+  settings = <?!= settings ?>;
+  if (!settings || !settings.program_name) settings = FALLBACK_SETTINGS;
+} catch(e) {
+  settings = FALLBACK_SETTINGS;
+}
+
+const currentPage = '<?!= currentPage ?>';
+
+document.documentElement.style.setProperty('--primary', settings.primary_color || '#1a2332');
+document.documentElement.style.setProperty('--accent', settings.accent_color || '#BCF100');
+document.documentElement.style.setProperty('--secondary', settings.secondary_color || '#2c3e50');
+document.documentElement.style.setProperty('--pgcis', settings.pgcis_color || '#2e7d32');
+
+let pageData;
+try {
+  pageData = <?!= pageData ?>;
+} catch(e) {
+  pageData = null;
+}
+
+const allRisks = (pageData && pageData.risks) ? pageData.risks : [];
+const viewer = (pageData && pageData.viewer) ? pageData.viewer : { isPgcis: false, email: '' };
+
+const PRIORITY_ORDER = ['Very High', 'High', 'Medium', 'Low'];
+
+function priorityBucket(value) {
+  const v = String(value || '').toLowerCase();
+  if (v.indexOf('very high') !== -1) return 'Very High';
+  if (v.indexOf('high') !== -1) return 'High';
+  if (v.indexOf('medium') !== -1) return 'Medium';
+  if (v.indexOf('low') !== -1) return 'Low';
+  return 'Medium';
+}
+
+function priorityClass(bucket) {
+  return bucket.toLowerCase().replace(/\s+/g, '-');
+}
+
+function statusClass(status) {
+  const s = String(status || '').toLowerCase().trim();
+  if (s === 'not started' || s === '') return 'status-not-started';
+  if (s === 'in progress') return 'status-in-progress';
+  if (s === 'complete' || s === 'closed') return 'status-complete';
+  if (s === 'blocked' || s === 'stalled') return 'status-blocked';
+  return 'status-not-started';
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+const state = {
+  priorityFilter: 'all',
+  search: ''
+};
+
+function renderFooter() {
+  return `<div class="footer">
+    Floyd KC Program | ${escapeHtml(settings.footer_text || '')}<br>
+    <span style="font-size:10px;color:#bbb;">${escapeHtml(settings.confidentiality_notice || '')}</span>
+  </div>`;
+}
+
+function getFilteredRisks() {
+  const search = state.search.toLowerCase().trim();
+  return allRisks.filter(r => {
+    if (state.priorityFilter !== 'all' && priorityBucket(r['Exposure Priority']) !== state.priorityFilter) return false;
+    if (search) {
+      const haystack = [
+        r['Risk ID'], r['Risk Name'], r.Description, r['Risk Area (Category)'],
+        r['Building / Scope'], r['Mitigation Steps'], r['Risk Owner']
+      ].map(v => String(v || '').toLowerCase()).join(' ');
+      if (haystack.indexOf(search) === -1) return false;
+    }
+    return true;
+  });
+}
+
+function groupByPriority(risks) {
+  const groups = { 'Very High': [], 'High': [], 'Medium': [], 'Low': [] };
+  risks.forEach(r => {
+    const bucket = priorityBucket(r['Exposure Priority']);
+    groups[bucket].push(r);
+  });
+  Object.keys(groups).forEach(k => {
+    groups[k].sort((a, b) => {
+      const sa = parseFloat(a['Risk Score (P x I)']) || 0;
+      const sb = parseFloat(b['Risk Score (P x I)']) || 0;
+      return sb - sa;
+    });
+  });
+  return groups;
+}
+
+function renderRiskCard(risk) {
+  const id = escapeHtml(risk['Risk ID']);
+  const name = escapeHtml(risk['Risk Name']);
+  const desc = escapeHtml(risk.Description);
+  const owner = escapeHtml(risk['Risk Owner'] || 'Unassigned');
+  const mitOwner = escapeHtml(risk['Mitigation Owner'] || '');
+  const area = escapeHtml(risk['Risk Area (Category)']);
+  const phase = escapeHtml(risk['Project Phase']);
+  const building = escapeHtml(risk['Building / Scope']);
+  const score = escapeHtml(risk['Risk Score (P x I)']);
+  const prob = escapeHtml(risk['Probability Rating']);
+  const impact = escapeHtml(risk['Impact Rating']);
+  const status = escapeHtml(risk['Action Status'] || 'Not Started');
+  const dueDate = escapeHtml(risk['Mitigation Due Date']);
+  const mitSteps = escapeHtml(risk['Mitigation Steps'] || '');
+  const cxImpact = String(risk['Cx Impact Flag'] || '').toUpperCase() === 'YES';
+  const mitId = 'mit-' + (risk['Risk ID'] || Math.random()).toString().replace(/[^a-z0-9]/gi, '');
+
+  return `
+    <div class="risk-card">
+      <div class="risk-card-top">
+        <div class="risk-id-name">
+          <span class="risk-id">${id}</span><span class="risk-name">${name}</span>
+        </div>
+        <div class="risk-score-block">
+          <div class="risk-score-number">${score}</div>
+          <div class="risk-score-label">P${prob.slice(0,1)} x I${impact.slice(0,1)}</div>
+        </div>
+      </div>
+      <div class="risk-description">${desc}</div>
+      <div class="risk-chips">
+        ${area ? `<span class="risk-chip">${area}</span>` : ''}
+        ${phase ? `<span class="risk-chip">${phase}</span>` : ''}
+        ${building ? `<span class="risk-chip">${building}</span>` : ''}
+        ${cxImpact ? `<span class="risk-chip cx-impact">Cx Impact</span>` : ''}
+        <span class="risk-chip ${statusClass(status)}">${status}</span>
+      </div>
+      <div class="risk-meta">
+        <div class="risk-meta-item"><span class="risk-meta-label">Risk Owner:</span><span class="risk-meta-value">${owner}</span></div>
+        ${mitOwner ? `<div class="risk-meta-item"><span class="risk-meta-label">Mitigation Owner:</span><span class="risk-meta-value">${mitOwner}</span></div>` : ''}
+        ${dueDate ? `<div class="risk-meta-item"><span class="risk-meta-label">Due:</span><span class="risk-meta-value">${dueDate}</span></div>` : ''}
+      </div>
+      ${mitSteps ? `
+        <button class="mitigation-toggle" onclick="toggleMitigation('${mitId}')">Mitigation steps</button>
+        <div class="mitigation-body" id="${mitId}">${mitSteps}</div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function toggleMitigation(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+function renderGroups(groups) {
+  let html = '';
+  PRIORITY_ORDER.forEach(bucket => {
+    const items = groups[bucket];
+    if (!items || items.length === 0) return;
+    html += `
+      <div class="risk-group">
+        <div class="risk-group-header ${priorityClass(bucket)}">
+          <span>${bucket} Priority</span>
+          <span class="risk-group-count">${items.length} risk${items.length === 1 ? '' : 's'}</span>
+        </div>
+        ${items.map(renderRiskCard).join('')}
+      </div>
+    `;
+  });
+  return html;
+}
+
+function renderControls() {
+  const priorityChips = ['all'].concat(PRIORITY_ORDER).map(p => {
+    const label = p === 'all' ? 'All priorities' : p;
+    const active = state.priorityFilter === p ? 'active' : '';
+    return `<button class="filter-chip ${active}" onclick="setPriorityFilter('${p}')">${label}</button>`;
+  }).join('');
+
+  return `
+    <div class="controls">
+      <div class="controls-left">
+        <span class="filter-label">Priority:</span>
+        ${priorityChips}
+      </div>
+      <input type="text" class="search-box" placeholder="Search risks..."
+        value="${escapeHtml(state.search)}" oninput="setSearch(this.value)">
+    </div>
+  `;
+}
+
+function renderIntro() {
+  const totalCount = allRisks.length;
+  const intro = viewer.isPgcis
+    ? `<p>Showing all ${totalCount} risks in the program risk register. Filter by exposure priority or search by keyword. Mitigation steps expand inline. Client-visible risks are marked in the source workbook by setting the <code>Visibility</code> column to <code>client_visible</code>.</p>`
+    : `<p>Risks identified by the PGCIS team that may affect schedule, scope, or commissioning quality for the Floyd KC program. Each risk shows its current exposure score (Probability times Impact), the mitigation owner, and the planned mitigation approach.</p>`;
+  return `
+    <div class="page-intro">
+      <h1>Risk Register</h1>
+      ${intro}
+    </div>
+  `;
+}
+
+function renderEmpty() {
+  if (allRisks.length === 0 && !viewer.isPgcis) {
+    return `
+      <div class="empty-state">
+        <h2>No client-visible risks at this time</h2>
+        <p>The PGCIS team has not yet surfaced any risks for external visibility. This view will populate as the program progresses.</p>
+      </div>
+    `;
+  }
+  if (allRisks.length === 0) {
+    return `
+      <div class="empty-state">
+        <h2>No risks in the register</h2>
+        <p>The Risks tab in the program workbook is empty.</p>
+      </div>
+    `;
+  }
+  return `
+    <div class="empty-state">
+      <h2>No risks match the current filter</h2>
+      <p>Clear the filter or adjust the search term.</p>
+    </div>
+  `;
+}
+
+function renderContent() {
+  const filtered = getFilteredRisks();
+  const groups = groupByPriority(filtered);
+  const hasAny = filtered.length > 0;
+  return hasAny ? renderGroups(groups) : renderEmpty();
+}
+
+function updateContent() {
+  const el = document.getElementById('risk-content');
+  if (el) el.innerHTML = renderContent();
+}
+
+function render() {
+  document.getElementById('app').innerHTML = `
+    <div class="container">
+      ${renderIntro()}
+      ${renderControls()}
+      <div id="risk-content">${renderContent()}</div>
+      ${renderFooter()}
+    </div>
+  `;
+}
+
+function setPriorityFilter(value) {
+  state.priorityFilter = value;
+  const order = ['all'].concat(PRIORITY_ORDER);
+  document.querySelectorAll('.filter-chip').forEach((chip, i) => {
+    chip.classList.toggle('active', order[i] === value);
+  });
+  updateContent();
+}
+
+function setSearch(value) {
+  state.search = value;
+  updateContent();
+}
+
+window.toggleMitigation = toggleMitigation;
+window.setPriorityFilter = setPriorityFilter;
+window.setSearch = setSearch;
+
+render();
+</script>
+
+</body>
+</html>

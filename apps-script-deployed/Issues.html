@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floyd KC - Issue Register</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  :root {
+    --primary: #1a2332;
+    --accent: #BCF100;
+    --secondary: #2c3e50;
+    --pgcis: #2e7d32;
+    --critical: #b42318;
+    --required: #175cd3;
+    --advisory: #667085;
+    --border: #e8ecf0;
+    --muted: #667085;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    padding: 28px 32px;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  }
+  .header-left { display: flex; align-items: center; justify-content: flex-start; }
+  .header-center { display: flex; justify-content: center; }
+  .header-title { color: #fff; font-size: 22px; font-weight: 700; text-align: center; }
+  .header-right { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .header-credit { color: #ffffff; font-size: 12px; font-weight: 500; }
+  .header-pgcis-logo { height: 54px; width: auto; }
+  .client-logo-wrap {
+    position: relative; display: inline-block; height: 55px; aspect-ratio: 232 / 85;
+  }
+  .client-logo-img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  .client-logo-img.inverted { filter: brightness(0) invert(1); }
+  .client-logo-accent {
+    position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+  }
+
+  .page-nav {
+    background: #fff; border-bottom: 2px solid var(--border);
+    padding: 14px 32px; max-width: 1200px; margin: 0 auto;
+  }
+  .page-nav-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  }
+  .page-nav-item {
+    font-size: 14px; font-weight: 600; color: var(--primary); padding: 6px 0;
+    border-bottom: 3px solid transparent; cursor: pointer; text-decoration: none;
+  }
+  .page-nav-item.active { border-bottom-color: var(--accent); }
+  .page-nav-item.inactive {
+    color: #99aabb; font-weight: 500; border-bottom: 3px solid transparent; cursor: default;
+  }
+  .page-nav-item:not(.inactive):hover {
+    color: #667788; border-bottom-color: #e0e4e8;
+  }
+  .page-nav-item.active:hover {
+    color: var(--primary); border-bottom-color: var(--accent);
+  }
+
+  .container { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
+  .portal-title {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+    margin-bottom: 14px;
+  }
+  .portal-title h1 { font-size: 22px; color: var(--primary); line-height: 1.2; }
+  .portal-subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .last-updated { font-size: 12px; color: var(--muted); text-align: right; }
+
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;
+    margin-bottom: 14px;
+  }
+  .metric {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;
+  }
+  .metric-label {
+    font-size: 11px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.5px; font-weight: 700;
+  }
+  .metric-value { font-size: 28px; color: var(--primary); font-weight: 750; margin-top: 4px; }
+  .metric-note { font-size: 12px; color: var(--muted); margin-top: 2px; min-height: 16px; }
+  .metric.critical { border-top: 4px solid var(--critical); }
+  .metric.required { border-top: 4px solid var(--required); }
+  .metric.advisory { border-top: 4px solid var(--advisory); }
+
+  .controls {
+    display: grid; grid-template-columns: 1.25fr repeat(4, minmax(130px, 0.7fr));
+    gap: 10px; margin-bottom: 14px; padding: 12px; background: #fff;
+    border: 1px solid var(--border); border-radius: 8px;
+  }
+  .control-field label {
+    display: block; font-size: 11px; font-weight: 700; color: #445566;
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;
+  }
+  .control-field input,
+  .control-field select {
+    width: 100%; border: 1px solid #d0d5dd; border-radius: 6px;
+    padding: 8px 9px; font-size: 13px; background: #fff; color: #1d2939;
+  }
+
+  .register-panel {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; margin-bottom: 16px;
+  }
+  .panel-header {
+    padding: 12px 16px; font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #ffffff;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    display: flex; justify-content: space-between; gap: 12px; align-items: center;
+  }
+  .panel-title { display: flex; flex-direction: column; gap: 2px; }
+  .panel-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  .panel-count { font-size: 11px; color: #d9e2ea; text-transform: none; letter-spacing: 0; }
+  .compact-toggle {
+    border: 1px solid rgba(255,255,255,0.45); background: rgba(255,255,255,0.12); color: #fff;
+    border-radius: 6px; padding: 6px 9px; font-size: 11px; font-weight: 700; cursor: pointer;
+    text-transform: none; letter-spacing: 0;
+  }
+  .compact-toggle:hover { background: rgba(255,255,255,0.2); }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 1060px; }
+  table.compact-table {
+    min-width: 0; table-layout: fixed;
+  }
+  .compact-table .col-type,
+  .compact-table .col-system,
+  .compact-table .col-needed,
+  .compact-table .col-updated {
+    display: none;
+  }
+  .compact-table th,
+  .compact-table td {
+    padding: 8px 8px; font-size: 11px;
+  }
+  .compact-table .col-id { width: 82px; }
+  .compact-table .col-priority { width: 112px; }
+  .compact-table .col-finding { width: auto; }
+  .compact-table .col-owner { width: 120px; }
+  .compact-table .col-idr { width: 150px; }
+  .compact-table .col-status { width: 104px; }
+  .compact-table .badge { padding: 2px 6px; font-size: 9px; min-height: 20px; }
+  th {
+    text-align: left; font-size: 11px; color: #445566; text-transform: uppercase;
+    letter-spacing: 0.4px; background: #edf0f4; padding: 9px 10px; border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px; border-bottom: 1px solid #f0f2f4; vertical-align: top;
+    font-size: 12px; color: #2a3544;
+  }
+  tr.issue-row { cursor: pointer; }
+  tr.issue-row:nth-child(even) { background: #fafbfc; }
+  tr.issue-row:hover { background: #eef3f8; }
+  .id-cell { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 700; color: var(--primary); white-space: nowrap; }
+  .finding-cell { min-width: 260px; font-weight: 600; color: #1d2939; }
+  .owner-cell, .idr-cell { min-width: 150px; }
+  .nowrap { white-space: nowrap; }
+
+  .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 22px; border-radius: 999px; padding: 3px 9px;
+    font-size: 10px; font-weight: 750; text-transform: uppercase; letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .badge-critical { background: #fef3f2; color: var(--critical); border: 1px solid #fecdca; }
+  .badge-required { background: #eff8ff; color: var(--required); border: 1px solid #b2ddff; }
+  .badge-advisory { background: #f2f4f7; color: #344054; border: 1px solid #d0d5dd; }
+  .badge-type { background: #ecfdf3; color: #027a48; border: 1px solid #abefc6; }
+  .badge-status { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+
+  .detail-row td {
+    background: #ffffff; padding: 0; border-bottom: 1px solid var(--border);
+  }
+  .issue-detail {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px 16px 16px;
+    border-left: 4px solid #d0d5dd;
+  }
+  .issue-detail.critical { border-left-color: var(--critical); }
+  .issue-detail.required { border-left-color: var(--required); }
+  .issue-detail.advisory { border-left-color: var(--advisory); }
+  .detail-block { min-width: 0; }
+  .detail-label {
+    font-size: 11px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.4px; font-weight: 700; margin-bottom: 4px;
+  }
+  .detail-value { font-size: 13px; color: #1d2939; line-height: 1.45; }
+  .source-list { display: flex; flex-direction: column; gap: 5px; }
+  .source-list a { color: #175cd3; text-decoration: none; font-size: 13px; }
+  .source-list a:hover { text-decoration: underline; }
+  .comment-panel {
+    grid-column: 1 / -1; border-top: 1px solid var(--border); padding-top: 12px;
+  }
+  .subscribe-panel {
+    grid-column: 1 / -1; border-top: 1px solid var(--border); padding-top: 12px;
+  }
+  .status-panel {
+    grid-column: 1 / -1; border-top: 1px solid var(--border); padding-top: 12px;
+  }
+  .status-form {
+    display: grid; grid-template-columns: 200px 230px 1fr auto; gap: 10px; align-items: end;
+  }
+  .status-form select,
+  .status-form input {
+    width: 100%; border: 1px solid #d0d5dd; border-radius: 6px;
+    padding: 8px 9px; font-size: 13px; background: #fff; color: #1d2939;
+  }
+  .status-form button {
+    border: 1px solid #027a48; background: #027a48; color: #fff;
+    border-radius: 6px; padding: 8px 12px; font-size: 12px; font-weight: 700;
+    cursor: pointer; min-height: 36px;
+  }
+  .status-form button:disabled { opacity: 0.55; cursor: default; }
+  .status-note { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+  .subscribe-form {
+    display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;
+  }
+  .subscribe-form input {
+    width: 100%; border: 1px solid #d0d5dd; border-radius: 6px;
+    padding: 8px 9px; font-size: 13px; background: #fff; color: #1d2939;
+  }
+  .subscribe-form button {
+    border: 1px solid #175cd3; background: #175cd3; color: #fff;
+    border-radius: 6px; padding: 8px 12px; font-size: 12px; font-weight: 700;
+    cursor: pointer; min-height: 36px;
+  }
+  .subscribe-form button:disabled { opacity: 0.55; cursor: default; }
+  .subscribe-note { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+  .comment-form {
+    display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;
+  }
+  .comment-form textarea,
+  .comment-form input {
+    width: 100%; border: 1px solid #d0d5dd; border-radius: 6px;
+    padding: 8px 9px; font-size: 13px; background: #fff; color: #1d2939;
+  }
+  .comment-form textarea { grid-column: 1 / -1; min-height: 70px; resize: vertical; }
+  .comment-form button {
+    border: 1px solid var(--primary); background: var(--primary); color: #fff;
+    border-radius: 6px; padding: 8px 12px; font-size: 12px; font-weight: 700;
+    cursor: pointer; min-height: 36px;
+  }
+  .comment-form button:disabled { opacity: 0.55; cursor: default; }
+  .comment-status { font-size: 12px; color: var(--muted); margin-top: 8px; min-height: 16px; }
+  .comment-status.ok { color: #027a48; }
+  .comment-status.error { color: var(--critical); }
+  .comment-list { margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .comment-item {
+    border: 1px solid #e4e7ec; border-radius: 6px; background: #f9fafb;
+    padding: 8px 10px; font-size: 12px; color: #344054;
+  }
+  .comment-meta { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+  .comment-link { color: #175cd3; text-decoration: none; }
+  .comment-link:hover { text-decoration: underline; }
+
+  .empty-state {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    padding: 28px; color: var(--muted); text-align: center;
+  }
+  .footer { text-align: center; padding: 20px; color: #99aabb; font-size: 11px; }
+
+  @media (max-width: 900px) {
+    .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .controls { grid-template-columns: 1fr 1fr; }
+    .portal-title { align-items: flex-start; flex-direction: column; }
+    .last-updated { text-align: left; }
+    .issue-detail { grid-template-columns: 1fr; }
+    .status-form { grid-template-columns: 1fr; }
+    .subscribe-form { grid-template-columns: 1fr; }
+    .comment-form { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 620px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    .controls { grid-template-columns: 1fr; }
+    .container { margin-top: 12px; padding: 0 10px; }
+    .portal-title h1 { font-size: 19px; }
+    .header { grid-template-columns: 1fr; gap: 12px; text-align: center; }
+    .header-left, .header-center, .header-right { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="empty-state">Loading issue register...</div>
+</div>
+
+<script>
+const FALLBACK_SETTINGS = {
+  program_name: 'Floyd KC Data Center Development Program',
+  client_name: 'Beale Infrastructure',
+  client_logo_url: '',
+  pgcis_logo_url: 'https://lh3.googleusercontent.com/d/1SvJPW5By4yRtWjnfirQbBrWUCk4noo2c',
+  primary_color: '#1a2332',
+  accent_color: '#BCF100',
+  secondary_color: '#2c3e50',
+  pgcis_color: '#2e7d32',
+  footer_text: 'Beale Infrastructure + PACHYDERM GLOBAL Critical Infrastructure Services',
+  confidentiality_notice: 'Confidential - For authorized personnel only',
+  client_logo_invert: 'true'
+};
+
+let settings;
+try {
+  settings = <?!= settings ?>;
+  if (!settings || !settings.program_name) settings = FALLBACK_SETTINGS;
+} catch(e) {
+  settings = FALLBACK_SETTINGS;
+}
+
+const currentPage = '<?!= currentPage ?>';
+document.documentElement.style.setProperty('--primary', settings.primary_color || '#1a2332');
+document.documentElement.style.setProperty('--accent', settings.accent_color || '#BCF100');
+document.documentElement.style.setProperty('--secondary', settings.secondary_color || '#2c3e50');
+document.documentElement.style.setProperty('--pgcis', settings.pgcis_color || '#2e7d32');
+
+let issueData;
+try {
+  issueData = <?!= pageData ?>;
+} catch(e) {
+  issueData = { issues: [], sources: [], comments: [], subscriptions: [], viewer: {} };
+}
+
+const PRIORITY_ORDER = {
+  'Critical Path': 1,
+  'Required Resolution': 2,
+  'Advisory / Optimization': 3
+};
+const TYPE_ORDER = {
+  'SPOF Analysis': 1,
+  'Gap Analysis': 2,
+  'Risk / Exposure': 3,
+  'Clarifying Question': 4,
+  'Decision Required': 5,
+  'Nonconformance': 6,
+  'Optimization': 7
+};
+const STATUS_OPTIONS = [
+  ['open', 'Open'],
+  ['in progress', 'In Progress'],
+  ['stalled', 'Stalled'],
+  ['complete', 'Complete'],
+  ['cancelled', 'Cancelled']
+];
+
+const initialIssueId = new URLSearchParams(window.location.search).get('issue');
+let expandedId = initialIssueId || null;
+let compactTable = true;
+const submitState = {};
+const subscriptionState = {};
+const statusState = {};
+const statusAuth = loadStatusAuth();
+const filters = {
+  search: '',
+  priority: 'All',
+  type: 'All',
+  status: 'All',
+  idr: 'All'
+};
+
+function field(row, names, fallback) {
+  for (const name of names) {
+    if (row[name] !== undefined && row[name] !== null && String(row[name]).trim() !== '') {
+      return String(row[name]).trim();
+    }
+  }
+  return fallback || '';
+}
+
+function normalizeIssue(row) {
+  const id = field(row, ['ID', 'Issue ID']);
+  const title = field(row, ['Title', 'Finding / Question', 'Finding', 'Question']);
+  return {
+    id,
+    visibility: field(row, ['Visibility', 'Client Visibility'], 'client_visible'),
+    status: field(row, ['Status', 'Portal Status'], 'open'),
+    priority: field(row, ['Priority'], 'Required Resolution'),
+    type: field(row, ['Type', 'Analysis Type'], 'Clarifying Question'),
+    system: field(row, ['Discipline / System', 'Discipline', 'System']),
+    title,
+    finding: field(row, ['Finding / Question', 'Finding', 'Question'], title),
+    decision: field(row, ['Decision Needed', 'Decision / Ask']),
+    action: field(row, ['Recommended Action', 'Action']),
+    owner: field(row, ['Owner']),
+    idr: field(row, ['IDR', 'Individual Directly Responsible'], 'TBD'),
+    neededBy: field(row, ['Needed By', 'Due', 'Due Date']),
+    updated: field(row, ['Last Updated', 'Updated']),
+    sourceId: field(row, ['Source ID', 'Source']),
+    sourceLink: field(row, ['Source Link', 'Source URL', 'Evidence Link']),
+    sourceRef: field(row, ['Source Reference', 'Reference']),
+    originalSourceTitle: field(row, ['Original Source Title', 'Original Source Document', 'Reviewed Source Document', 'Beale Source Document']),
+    originalSourceLink: field(row, ['Original Source Link', 'Original Source URL', 'Reviewed Source Link', 'Beale Source Link']),
+    originalSourceRef: field(row, ['Original Source Reference', 'Original Source Page/Sheet', 'Reviewed Source Reference', 'Beale Source Reference']),
+    originalSourceType: field(row, ['Original Source Type', 'Reviewed Source Type', 'Beale Source Type']),
+    evidence: field(row, ['Evidence / Notes', 'Evidence', 'Why It Matters', 'Impact']),
+    closure: field(row, ['Closure Criteria', 'Closeout Criteria'])
+  };
+}
+
+function getIssues() {
+  const raw = issueData && Array.isArray(issueData.issues) ? issueData.issues : [];
+  return raw
+    .map(normalizeIssue)
+    .filter(issue => issue.id || issue.title)
+    .sort(compareIssues);
+}
+
+function compareIssues(a, b) {
+  const pa = PRIORITY_ORDER[a.priority] || 99;
+  const pb = PRIORITY_ORDER[b.priority] || 99;
+  if (pa !== pb) return pa - pb;
+  const ta = TYPE_ORDER[a.type] || 99;
+  const tb = TYPE_ORDER[b.type] || 99;
+  if (ta !== tb) return ta - tb;
+  return naturalId(a.id).localeCompare(naturalId(b.id));
+}
+
+function naturalId(id) {
+  return String(id || '').replace(/-(\d+)$/, (_, n) => '-' + n.padStart(4, '0'));
+}
+
+function uniqueValues(rows, key) {
+  return Array.from(new Set(rows.map(row => row[key]).filter(Boolean))).sort((a, b) => {
+    if (key === 'priority') return (PRIORITY_ORDER[a] || 99) - (PRIORITY_ORDER[b] || 99);
+    if (key === 'type') return (TYPE_ORDER[a] || 99) - (TYPE_ORDER[b] || 99);
+    return a.localeCompare(b);
+  });
+}
+
+function filteredIssues(rows) {
+  const q = filters.search.toLowerCase();
+  return rows.filter(issue => {
+    const haystack = [
+      issue.id, issue.priority, issue.type, issue.system, issue.title, issue.finding,
+      issue.decision, issue.action, issue.owner, issue.idr, issue.neededBy, issue.status
+    ].join(' ').toLowerCase();
+    return (!q || haystack.indexOf(q) !== -1) &&
+      (filters.priority === 'All' || issue.priority === filters.priority) &&
+      (filters.type === 'All' || issue.type === filters.type) &&
+      (filters.status === 'All' || issue.status === filters.status) &&
+      (filters.idr === 'All' || issue.idr === filters.idr);
+  });
+}
+
+function priorityClass(priority) {
+  if (priority === 'Critical Path') return 'critical';
+  if (priority === 'Advisory / Optimization') return 'advisory';
+  return 'required';
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function isEmbeddedInGoogleSites() {
+  const referrer = document.referrer || '';
+  const ancestorOrigins = window.location.ancestorOrigins
+    ? Array.from(window.location.ancestorOrigins)
+    : [];
+
+  return referrer.indexOf('sites.google.com') !== -1 ||
+    ancestorOrigins.some(origin => origin.indexOf('sites.google.com') !== -1);
+}
+
+function renderPageNav() {
+  return '';
+}
+
+function shouldPreserveClientLogoAccent() {
+  const clientName = (settings.client_name || '').toLowerCase();
+  return settings.client_logo_invert === 'true' && clientName.indexOf('beale') !== -1;
+}
+
+function renderClientLogo() {
+  if (!settings.client_logo_url) {
+    return `<div style="color:#fff;font-size:18px;font-weight:700;">${escapeHtml(settings.client_name)}</div>`;
+  }
+
+  if (shouldPreserveClientLogoAccent()) {
+    return `
+      <span class="client-logo-wrap" aria-label="${escapeHtml(settings.client_name)}">
+        <img src="${escapeHtml(settings.client_logo_url)}" alt="" class="client-logo-img inverted">
+        <svg class="client-logo-accent" viewBox="0 0 232 85" aria-hidden="true" focusable="false">
+          <path d="M227.684 0L194.127 33.5992H146.621V38.618H192.639V84.6367H197.658V37.1292L231.257 3.53005L227.684 0Z" fill="#BCF100"/>
+        </svg>
+      </span>`;
+  }
+
+  const logoFilter = settings.client_logo_invert === 'true' ? 'filter:brightness(0) invert(1);' : '';
+  return `<img src="${escapeHtml(settings.client_logo_url)}" alt="${escapeHtml(settings.client_name)}" style="height:55px;${logoFilter}">`;
+}
+
+function renderHeader() {
+  return '';
+}
+
+function renderFooter() {
+  return `<div class="footer">
+    Floyd KC Program | ${escapeHtml(settings.footer_text)}<br>
+    <span style="font-size:10px;color:#bbb;">${escapeHtml(settings.confidentiality_notice)}</span>
+  </div>`;
+}
+
+function renderOptionList(values, selected) {
+  return ['All'].concat(values).map(value =>
+    `<option value="${escapeHtml(value)}" ${value === selected ? 'selected' : ''}>${escapeHtml(value)}</option>`
+  ).join('');
+}
+
+function renderControls(allRows) {
+  return `
+    <div class="controls">
+      <div class="control-field">
+        <label for="search">Search</label>
+        <input id="search" type="search" value="${escapeHtml(filters.search)}" placeholder="ID, owner, system, action, source..." oninput="setFilter('search', this.value)">
+      </div>
+      <div class="control-field">
+        <label for="priority">Priority</label>
+        <select id="priority" onchange="setFilter('priority', this.value)">${renderOptionList(uniqueValues(allRows, 'priority'), filters.priority)}</select>
+      </div>
+      <div class="control-field">
+        <label for="type">Analysis Type</label>
+        <select id="type" onchange="setFilter('type', this.value)">${renderOptionList(uniqueValues(allRows, 'type'), filters.type)}</select>
+      </div>
+      <div class="control-field">
+        <label for="status">Status</label>
+        <select id="status" onchange="setFilter('status', this.value)">${renderOptionList(uniqueValues(allRows, 'status'), filters.status)}</select>
+      </div>
+      <div class="control-field">
+        <label for="idr">IDR</label>
+        <select id="idr" onchange="setFilter('idr', this.value)">${renderOptionList(uniqueValues(allRows, 'idr'), filters.idr)}</select>
+      </div>
+    </div>`;
+}
+
+function renderMetrics(allRows) {
+  const critical = allRows.filter(row => row.priority === 'Critical Path').length;
+  const required = allRows.filter(row => row.priority === 'Required Resolution').length;
+  const advisory = allRows.filter(row => row.priority === 'Advisory / Optimization').length;
+  const open = allRows.filter(row => {
+    const status = row.status.toLowerCase();
+    return status !== 'complete' && status !== 'cancelled';
+  }).length;
+  return `
+    <div class="summary-grid">
+      <div class="metric"><div class="metric-label">Total Items</div><div class="metric-value">${allRows.length}</div><div class="metric-note">${open} open</div></div>
+      <div class="metric critical"><div class="metric-label">Critical Path</div><div class="metric-value">${critical}</div><div class="metric-note">Schedule, energization, acceptance</div></div>
+      <div class="metric required"><div class="metric-label">Required Resolution</div><div class="metric-value">${required}</div><div class="metric-note">Needed for planning or closeout</div></div>
+      <div class="metric advisory"><div class="metric-label">Advisory</div><div class="metric-value">${advisory}</div><div class="metric-note">Track for optimization</div></div>
+    </div>`;
+}
+
+function renderBadge(text, className) {
+  return `<span class="badge ${className}">${escapeHtml(text)}</span>`;
+}
+
+function renderLinkedSourceList(ids, refs, links, fallbackLabel) {
+  const sourceIds = splitMulti(ids);
+  const sourceRefs = splitMulti(refs);
+  const sourceLinks = splitMulti(links);
+  if (sourceLinks.length === 0 && links) sourceLinks.push(links);
+
+  if (sourceLinks.length === 0) {
+    const label = [ids, refs].filter(Boolean).join(' - ');
+    return label ? escapeHtml(label) : escapeHtml(fallbackLabel || 'Source pending');
+  }
+
+  return `<div class="source-list">${sourceLinks.map((link, index) => {
+    const sourceId = sourceIds[index] || sourceIds[0] || 'Source';
+    const ref = sourceRefs[index] || sourceRefs[0] || '';
+    const label = ref ? sourceId + ' - ' + ref : sourceId;
+    return `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+  }).join('')}</div>`;
+}
+
+function renderAnalysisSourceLinks(issue) {
+  return renderLinkedSourceList(issue.sourceId, issue.sourceRef, issue.sourceLink, 'Analysis source pending');
+}
+
+function renderOriginalSourceLinks(issue) {
+  const title = issue.originalSourceTitle || issue.originalSourceType || '';
+  const label = [title, issue.originalSourceRef].filter(Boolean).join(' - ');
+  return renderLinkedSourceList(title || issue.originalSourceType, issue.originalSourceRef, issue.originalSourceLink, label || 'Original source file pending');
+}
+
+function hasOriginalSource(issue) {
+  return !!(issue.originalSourceTitle || issue.originalSourceLink || issue.originalSourceRef || issue.originalSourceType);
+}
+
+function splitMulti(value) {
+  return String(value || '')
+    .split(/\n|;|\|/g)
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function loadStatusAuth() {
+  try {
+    return {
+      token: localStorage.getItem('floydIssueStatusAuthToken') || '',
+      email: localStorage.getItem('floydIssueStatusAuthEmail') || ''
+    };
+  } catch (err) {
+    return { token: '', email: '' };
+  }
+}
+
+function getCommentsForIssue(issueId) {
+  const comments = issueData && Array.isArray(issueData.comments) ? issueData.comments : [];
+  return comments.filter(comment => field(comment, ['Issue ID']) === issueId);
+}
+
+function getSubscriptionsForIssue(issueId) {
+  const subscriptions = issueData && Array.isArray(issueData.subscriptions) ? issueData.subscriptions : [];
+  return subscriptions.filter(subscription => field(subscription, ['Issue ID']) === issueId && field(subscription, ['Status']).toLowerCase() === 'active');
+}
+
+function renderComments(issue) {
+  const comments = getCommentsForIssue(issue.id).slice(-5).reverse();
+  if (comments.length === 0) return '';
+
+  return `
+    <div class="comment-list">
+      ${comments.map(comment => {
+        const submittedAt = field(comment, ['Submitted At']);
+        const submittedBy = field(comment, ['Submitted By'], 'unknown');
+        const text = field(comment, ['Comment']);
+        const link = field(comment, ['Reference Link']);
+        const title = field(comment, ['Reference Title'], link);
+        const linkHtml = link ? `<div><a class="comment-link" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title || link)}</a></div>` : '';
+        return `
+          <div class="comment-item">
+            <div class="comment-meta">${escapeHtml(submittedAt)} | ${escapeHtml(submittedBy)}</div>
+            <div>${escapeHtml(text)}</div>
+            ${linkHtml}
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderCommentForm(issue) {
+  const state = submitState[issue.id] || {};
+  const statusClass = state.error ? 'error' : state.ok ? 'ok' : '';
+  const statusText = state.message || '';
+  return `
+    <div class="comment-panel">
+      <div class="detail-label">Add Comment / Updated Reference</div>
+      ${renderComments(issue)}
+      <div class="comment-form">
+        <textarea id="comment-${escapeHtml(issue.id)}" placeholder="Add a comment, response, clarification, or status note for this issue."></textarea>
+        <input id="ref-link-${escapeHtml(issue.id)}" type="url" placeholder="Reference or updated document link">
+        <input id="ref-title-${escapeHtml(issue.id)}" type="text" placeholder="Reference title or note">
+        <button id="submit-${escapeHtml(issue.id)}" type="button" onclick="submitComment('${escapeHtml(issue.id)}')">Submit</button>
+      </div>
+      <div id="comment-status-${escapeHtml(issue.id)}" class="comment-status ${statusClass}">${escapeHtml(statusText)}</div>
+    </div>`;
+}
+
+function renderSubscriptionForm(issue) {
+  const state = subscriptionState[issue.id] || {};
+  const statusClass = state.error ? 'error' : state.ok ? 'ok' : '';
+  const statusText = state.message || '';
+  const viewerEmail = issueData && issueData.viewer && issueData.viewer.email ? issueData.viewer.email : '';
+  const subscriptionCount = getSubscriptionsForIssue(issue.id).length;
+  return `
+    <div class="subscribe-panel">
+      <div class="detail-label">Subscribe To Issue Updates</div>
+      <div class="subscribe-form">
+        <input id="sub-email-${escapeHtml(issue.id)}" type="email" value="${escapeHtml(viewerEmail)}" placeholder="Email for notifications">
+        <input id="sub-name-${escapeHtml(issue.id)}" type="text" placeholder="Name or organization">
+        <button id="sub-submit-${escapeHtml(issue.id)}" type="button" onclick="submitSubscription('${escapeHtml(issue.id)}')">Subscribe</button>
+      </div>
+      <div class="subscribe-note">Subscribers are notified when a comment/reference is submitted for this issue. PGCIS can also enable Sheet-edit notifications for issue row changes. Active subscribers: ${subscriptionCount}</div>
+      <div id="sub-status-${escapeHtml(issue.id)}" class="comment-status ${statusClass}">${escapeHtml(statusText)}</div>
+    </div>`;
+}
+
+function renderStatusForm(issue) {
+  const state = statusState[issue.id] || {};
+  const statusClass = state.error ? 'error' : state.ok ? 'ok' : '';
+  const statusText = state.message || '';
+  const currentStatus = String(issue.status || '').toLowerCase().trim();
+  const viewerEmail = statusAuth.email || (issueData && issueData.viewer && issueData.viewer.email ? issueData.viewer.email : '');
+  const options = STATUS_OPTIONS.map(option => {
+    const value = option[0];
+    const label = option[1];
+    return `<option value="${escapeHtml(value)}" ${value === currentStatus ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+  }).join('');
+
+  return `
+    <div class="status-panel">
+      <div class="detail-label">Change Status</div>
+      <div class="status-form">
+        <select id="status-change-${escapeHtml(issue.id)}">${options}</select>
+        <input id="status-email-${escapeHtml(issue.id)}" type="email" value="${escapeHtml(viewerEmail)}" placeholder="Your IDR/support email">
+        <input id="status-note-${escapeHtml(issue.id)}" type="text" placeholder="Optional status change note">
+        <button id="status-submit-${escapeHtml(issue.id)}" type="button" onclick="submitStatusUpdate('${escapeHtml(issue.id)}')">Update Status</button>
+      </div>
+      <div class="status-note">Status changes are restricted to the assigned IDR or an authorized PGCIS member of beale.support@pgcis.com. If the portal cannot verify your signed-in email directly, it will email you a confirmation link.</div>
+      <div id="status-message-${escapeHtml(issue.id)}" class="comment-status ${statusClass}">${escapeHtml(statusText)}</div>
+    </div>`;
+}
+
+function renderDetail(issue) {
+  const cls = priorityClass(issue.priority);
+  return `
+    <tr class="detail-row">
+      <td colspan="10">
+        <div class="issue-detail ${cls}">
+          <div class="detail-block">
+            <div class="detail-label">Decision Needed</div>
+            <div class="detail-value">${escapeHtml(issue.decision || 'Decision not yet entered.')}</div>
+          </div>
+          <div class="detail-block">
+            <div class="detail-label">Recommended Action</div>
+            <div class="detail-value">${escapeHtml(issue.action || 'Recommended action not yet entered.')}</div>
+          </div>
+          <div class="detail-block">
+            <div class="detail-label">Evidence / Impact</div>
+            <div class="detail-value">${escapeHtml(issue.evidence || 'Evidence summary pending in Sheet.')}</div>
+          </div>
+          <div class="detail-block">
+            <div class="detail-label">PGCIS Analysis Source</div>
+            <div class="detail-value">${renderAnalysisSourceLinks(issue)}</div>
+          </div>
+          <div class="detail-block">
+            <div class="detail-label">Original Beale Source Files</div>
+            <div class="detail-value">${hasOriginalSource(issue) ? renderOriginalSourceLinks(issue) : 'Original source file link pending.'}</div>
+          </div>
+          <div class="detail-block">
+            <div class="detail-label">Closure Criteria</div>
+            <div class="detail-value">${escapeHtml(issue.closure || 'Closure criteria pending.')}</div>
+          </div>
+          <div class="detail-block">
+            <div class="detail-label">Client Visibility</div>
+            <div class="detail-value">${escapeHtml(issue.visibility)}</div>
+          </div>
+          ${renderStatusForm(issue)}
+          ${renderSubscriptionForm(issue)}
+          ${renderCommentForm(issue)}
+        </div>
+      </td>
+    </tr>`;
+}
+
+function renderIssueRows(rows) {
+  if (rows.length === 0) {
+    return `<tr><td colspan="10" style="text-align:center;color:#667085;padding:24px;">No issues match the current filters.</td></tr>`;
+  }
+
+  return rows.map(issue => {
+    const cls = priorityClass(issue.priority);
+    const detail = expandedId === issue.id ? renderDetail(issue) : '';
+    return `
+      <tr id="issue-${escapeHtml(issue.id)}" class="issue-row" onclick="toggleIssue('${escapeHtml(issue.id)}')">
+        <td class="id-cell col-id" title="Type: ${escapeHtml(issue.type)}">${escapeHtml(issue.id)}</td>
+        <td class="col-priority">${renderBadge(issue.priority, 'badge-' + cls)}</td>
+        <td class="col-type">${renderBadge(issue.type, 'badge-type')}</td>
+        <td class="col-system">${escapeHtml(issue.system)}</td>
+        <td class="finding-cell col-finding">${escapeHtml(issue.finding)}</td>
+        <td class="owner-cell col-owner">${escapeHtml(issue.owner)}</td>
+        <td class="idr-cell col-idr">${escapeHtml(issue.idr)}</td>
+        <td class="nowrap col-needed">${escapeHtml(issue.neededBy)}</td>
+        <td class="col-status">${renderBadge(issue.status, 'badge-status')}</td>
+        <td class="nowrap col-updated">${escapeHtml(issue.updated)}</td>
+      </tr>
+      ${detail}`;
+  }).join('');
+}
+
+function renderRegister(allRows, visibleRows) {
+  const tableClass = compactTable ? 'compact-table' : '';
+  const toggleLabel = compactTable ? 'Show All Columns' : 'Compact View';
+  return `
+    <div class="register-panel">
+      <div class="panel-header">
+        <span class="panel-title">
+          <span>Action Register</span>
+          <span class="panel-count">${visibleRows.length} of ${allRows.length} shown | sorted by priority</span>
+        </span>
+        <span class="panel-tools">
+          <button class="compact-toggle" type="button" onclick="toggleCompactTable(event)">${toggleLabel}</button>
+        </span>
+      </div>
+      <div class="table-wrap">
+        <table class="${tableClass}">
+          <thead>
+            <tr>
+              <th class="col-id">ID</th>
+              <th class="col-priority">Priority</th>
+              <th class="col-type">Type</th>
+              <th class="col-system">Discipline / System</th>
+              <th class="col-finding">Finding / Question</th>
+              <th class="col-owner">Owner</th>
+              <th class="col-idr">IDR</th>
+              <th class="col-needed">Needed By</th>
+              <th class="col-status">Status</th>
+              <th class="col-updated">Updated</th>
+            </tr>
+          </thead>
+          <tbody>${renderIssueRows(visibleRows)}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function latestUpdated(rows) {
+  const dates = rows.map(row => row.updated).filter(Boolean).sort();
+  return dates.length ? dates[dates.length - 1] : '';
+}
+
+function render() {
+  const allRows = getIssues();
+  const visibleRows = filteredIssues(allRows);
+  const updated = latestUpdated(allRows);
+  const app = document.getElementById('app');
+
+  if (allRows.length === 0) {
+    app.innerHTML = `
+      ${renderHeader()}
+      <div class="container">
+        <div class="empty-state">
+          No issue rows found. Add an <strong>Issues</strong> tab to the dashboard Google Sheet with the expected register headers.
+        </div>
+      </div>
+      ${renderFooter()}`;
+    return;
+  }
+
+  app.innerHTML = `
+    ${renderHeader()}
+    <div class="container">
+      <div class="portal-title">
+        <div>
+          <h1>Issue Register</h1>
+          <div class="portal-subtitle">Gap analysis, SPOF analysis, clarifying questions, and risk items from the current Floyd review set.</div>
+        </div>
+        <div class="last-updated">Last updated<br><strong>${escapeHtml(updated || 'Pending')}</strong></div>
+      </div>
+      ${renderMetrics(allRows)}
+      ${renderControls(allRows)}
+      ${renderRegister(allRows, visibleRows)}
+    </div>
+    ${renderFooter()}`;
+}
+
+function setFilter(key, value) {
+  filters[key] = value;
+  render();
+}
+
+function toggleIssue(id) {
+  expandedId = expandedId === id ? null : id;
+  render();
+}
+
+function toggleCompactTable(event) {
+  if (event && event.stopPropagation) event.stopPropagation();
+  compactTable = !compactTable;
+  render();
+}
+
+function setCommentStatus(issueId, message, isError) {
+  submitState[issueId] = {
+    message: message,
+    error: !!isError,
+    ok: !isError
+  };
+  const status = document.getElementById('comment-status-' + issueId);
+  if (status) {
+    status.className = 'comment-status ' + (isError ? 'error' : 'ok');
+    status.textContent = message;
+  }
+}
+
+function submitComment(issueId) {
+  const commentEl = document.getElementById('comment-' + issueId);
+  const linkEl = document.getElementById('ref-link-' + issueId);
+  const titleEl = document.getElementById('ref-title-' + issueId);
+  const button = document.getElementById('submit-' + issueId);
+  const payload = {
+    issueId: issueId,
+    comment: commentEl ? commentEl.value.trim() : '',
+    referenceLink: linkEl ? linkEl.value.trim() : '',
+    referenceTitle: titleEl ? titleEl.value.trim() : ''
+  };
+
+  if (!payload.comment && !payload.referenceLink) {
+    setCommentStatus(issueId, 'Enter a comment or reference link before submitting.', true);
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Submitting';
+  }
+  setCommentStatus(issueId, 'Submitting...', false);
+
+  google.script.run
+    .withSuccessHandler(result => {
+      if (commentEl) commentEl.value = '';
+      if (linkEl) linkEl.value = '';
+      if (titleEl) titleEl.value = '';
+      setCommentStatus(issueId, 'Submitted. PGCIS will review and incorporate as needed.', false);
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Submit';
+      }
+    })
+    .withFailureHandler(error => {
+      setCommentStatus(issueId, error && error.message ? error.message : 'Submission failed.', true);
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Submit';
+      }
+    })
+    .submitIssueComment(payload);
+}
+
+function setSubscriptionStatus(issueId, message, isError) {
+  subscriptionState[issueId] = {
+    message: message,
+    error: !!isError,
+    ok: !isError
+  };
+  const status = document.getElementById('sub-status-' + issueId);
+  if (status) {
+    status.className = 'comment-status ' + (isError ? 'error' : 'ok');
+    status.textContent = message;
+  }
+}
+
+function submitSubscription(issueId) {
+  const emailEl = document.getElementById('sub-email-' + issueId);
+  const nameEl = document.getElementById('sub-name-' + issueId);
+  const button = document.getElementById('sub-submit-' + issueId);
+  const payload = {
+    issueId: issueId,
+    email: emailEl ? emailEl.value.trim() : '',
+    name: nameEl ? nameEl.value.trim() : ''
+  };
+
+  if (!payload.email) {
+    setSubscriptionStatus(issueId, 'Enter an email address for notifications.', true);
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Subscribing';
+  }
+  setSubscriptionStatus(issueId, 'Subscribing...', false);
+
+  google.script.run
+    .withSuccessHandler(result => {
+      setSubscriptionStatus(issueId, 'Subscribed. You will receive notifications for this issue.', false);
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Subscribe';
+      }
+    })
+    .withFailureHandler(error => {
+      setSubscriptionStatus(issueId, error && error.message ? error.message : 'Subscription failed.', true);
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Subscribe';
+      }
+    })
+    .submitIssueSubscription(payload);
+}
+
+function setStatusUpdateStatus(issueId, message, isError) {
+  statusState[issueId] = {
+    message: message,
+    error: !!isError,
+    ok: !isError
+  };
+  const status = document.getElementById('status-message-' + issueId);
+  if (status) {
+    status.className = 'comment-status ' + (isError ? 'error' : 'ok');
+    status.textContent = message;
+  }
+}
+
+function updateLocalIssueStatus(issueId, newStatus, changedAt) {
+  const rows = issueData && Array.isArray(issueData.issues) ? issueData.issues : [];
+  rows.forEach(row => {
+    const rowId = field(row, ['ID', 'Issue ID']);
+    if (rowId !== issueId) return;
+    if (row.Status !== undefined) row.Status = newStatus;
+    else row['Portal Status'] = newStatus;
+    if (row['Last Updated'] !== undefined) row['Last Updated'] = changedAt ? changedAt.slice(0, 10) : row['Last Updated'];
+    else if (row.Updated !== undefined) row.Updated = changedAt ? changedAt.slice(0, 10) : row.Updated;
+  });
+}
+
+function submitStatusUpdate(issueId) {
+  const statusEl = document.getElementById('status-change-' + issueId);
+  const emailEl = document.getElementById('status-email-' + issueId);
+  const noteEl = document.getElementById('status-note-' + issueId);
+  const button = document.getElementById('status-submit-' + issueId);
+  const payload = {
+    issueId: issueId,
+    status: statusEl ? statusEl.value : '',
+    email: emailEl ? emailEl.value.trim() : '',
+    authToken: statusAuth.token || '',
+    note: noteEl ? noteEl.value.trim() : ''
+  };
+
+  if (!payload.status) {
+    setStatusUpdateStatus(issueId, 'Select a status before submitting.', true);
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Updating';
+  }
+  setStatusUpdateStatus(issueId, 'Updating status...', false);
+
+  google.script.run
+    .withSuccessHandler(result => {
+      if (result && result.pendingVerification) {
+        setStatusUpdateStatus(issueId, 'Confirmation email sent. The issue will update after the link is opened. After confirmation, this browser can submit future authorized status changes directly.', false);
+        if (button) {
+          button.disabled = false;
+          button.textContent = 'Update Status';
+        }
+        return;
+      }
+      if (noteEl) noteEl.value = '';
+      updateLocalIssueStatus(issueId, result.status, result.changedAt);
+      setStatusUpdateStatus(issueId, 'Status updated and notifications sent.', false);
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Update Status';
+      }
+      render();
+    })
+    .withFailureHandler(error => {
+      setStatusUpdateStatus(issueId, error && error.message ? error.message : 'Status update failed.', true);
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Update Status';
+      }
+    })
+    .submitIssueStatusUpdate(payload);
+}
+
+render();
+if (initialIssueId) {
+  setTimeout(() => {
+    const row = document.getElementById('issue-' + initialIssueId);
+    if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 250);
+}
+</script>
+</body>
+</html>

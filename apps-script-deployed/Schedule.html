@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floyd KC - Program Schedule</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  :root {
+    --primary: #1a2332;
+    --accent: #BCF100;
+    --secondary: #2c3e50;
+    --pgcis: #2e7d32;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    padding: 28px 32px;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  }
+  .header-left { display: flex; align-items: center; justify-content: flex-start; }
+  .header-center { display: flex; justify-content: center; }
+  .header-title { color: #fff; font-size: 22px; font-weight: 700; text-align: center; }
+  .header-right { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .header-credit { color: #ffffff; font-size: 12px; font-weight: 500; }
+  .header-pgcis-logo { height: 54px; width: auto; }
+  .client-logo-wrap {
+    position: relative; display: inline-block; height: 55px; aspect-ratio: 232 / 85;
+  }
+  .client-logo-img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  .client-logo-img.inverted { filter: brightness(0) invert(1); }
+  .client-logo-accent {
+    position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+  }
+
+  /* Page navigation bar */
+  .page-nav {
+    background: #fff; border-bottom: 2px solid #e8ecf0;
+    padding: 14px 32px; max-width: 1200px; margin: 0 auto;
+  }
+  .page-nav-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; gap: 24px;
+  }
+  .page-nav-item {
+    font-size: 14px; font-weight: 600; color: var(--primary); padding: 6px 0;
+    border-bottom: 3px solid transparent; cursor: pointer;
+    text-decoration: none;
+  }
+  .page-nav-item.active {
+    border-bottom-color: var(--accent);
+  }
+  .page-nav-item.inactive {
+    color: #99aabb; font-weight: 500; border-bottom: 3px solid transparent;
+    cursor: default;
+  }
+  .page-nav-item:not(.inactive):hover {
+    color: #667788; border-bottom-color: #e0e4e8;
+  }
+  .page-nav-item.active:hover {
+    color: var(--primary); border-bottom-color: var(--accent);
+  }
+
+  .container { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
+
+  /* Controls bar */
+  .controls {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; padding: 12px 16px; background: #fff;
+    border-radius: 8px; border: 1px solid #e8ecf0;
+  }
+  .view-toggle { display: flex; gap: 4px; flex-wrap: wrap; }
+  .view-btn {
+    padding: 6px 16px; border: 1px solid #dde1e6; border-radius: 6px;
+    background: #fff; color: #445566; font-size: 12px; cursor: pointer; font-weight: 500;
+  }
+  .view-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .legend { display: flex; gap: 14px; font-size: 11px; color: #445566; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+  .legend-dot.not-started { background: #e0e4e8; }
+  .legend-dot.in-progress { background: #2196F3; }
+  .legend-dot.at-risk { background: #ff9800; }
+  .legend-dot.delayed { background: #f44336; }
+  .legend-dot.complete { background: #4caf50; }
+
+  /* Gantt section */
+  .gantt-section {
+    background: #fff; border-radius: 8px; border: 1px solid #e8ecf0;
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .gantt-section-header {
+    padding: 12px 16px; font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; border-bottom: 2px solid #e8ecf0;
+    display: flex; justify-content: space-between; align-items: center;
+    color: #ffffff; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  }
+  .gantt-section-count { font-size: 11px; color: #8899aa; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+  /* Timeline header */
+  .timeline-header {
+    display: grid; grid-template-columns: 240px 1fr;
+    border-bottom: 1px solid #e8ecf0; background: #e4e8ee;
+  }
+  .timeline-label { padding: 8px 16px; font-size: 11px; color: #2a3544; font-weight: 600; }
+  .timeline-months { display: flex; position: relative; }
+  .timeline-month {
+    flex: 1; text-align: center; font-size: 10px; color: #2a3544; padding: 8px 0;
+    border-left: 1px solid #f0f2f4; font-weight: 500;
+  }
+  .timeline-month.current { background: #f0f8ff; color: #2196F3; font-weight: 700; }
+
+  /* Gantt rows */
+  .gantt-row {
+    display: grid; grid-template-columns: 240px 1fr;
+    border-bottom: 1px solid #f0f2f4; min-height: 40px; cursor: pointer;
+    transition: background 0.1s;
+  }
+  .gantt-row:nth-child(even) { background: #edf0f4; }
+  .gantt-row:hover { background: #e4e8ee; }
+  .gantt-row:last-child { border-bottom: none; }
+
+  .gantt-label {
+    padding: 10px 16px; font-size: 12px; color: #2a3544; display: flex;
+    align-items: center; gap: 8px; border-right: 1px solid #f0f2f4;
+  }
+  .gantt-label .owner { font-size: 10px; color: #6b7a8a; }
+
+  .gantt-bars { position: relative; padding: 6px 0; }
+  .gantt-bar {
+    position: absolute; height: 26px; border-radius: 4px; top: 7px;
+    display: flex; align-items: center; padding: 0 8px;
+    font-size: 10px; color: #fff; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s; overflow: hidden; white-space: nowrap;
+    text-overflow: ellipsis; min-width: 4px;
+  }
+  .gantt-bar:hover { opacity: 0.85; }
+  .gantt-bar.has-note { border: 2px dashed rgba(255,255,255,0.7); }
+  .gantt-bar.has-note::after { content: '\1F4AC'; font-size: 11px; margin-left: 6px; }
+  .gantt-bar.not-started { background: #e0e4e8; color: #445566; }
+  .gantt-bar.in-progress { background: #2196F3; }
+  .gantt-bar.at-risk { background: #ff9800; }
+  .gantt-bar.delayed { background: #f44336; }
+  .gantt-bar.complete { background: #4caf50; }
+
+  /* Progress fill inside bar */
+  .gantt-bar-progress {
+    position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px;
+    opacity: 0.3; background: #fff;
+  }
+
+  /* Today marker */
+  .today-marker {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: #f44336; z-index: 5;
+  }
+  .today-label {
+    position: absolute; top: -2px; font-size: 9px; color: #f44336;
+    font-weight: 700; transform: translateX(-50%); white-space: nowrap;
+  }
+
+  /* Detail popup */
+  .detail-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4); display: flex; align-items: center;
+    justify-content: center; z-index: 100;
+  }
+  .detail-card {
+    background: #fff; border-radius: 12px; padding: 24px 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15); max-width: 420px; width: 100%; position: relative;
+  }
+  .detail-card .close-btn {
+    position: absolute; top: 12px; right: 16px; background: none; border: none;
+    font-size: 20px; color: #99aabb; cursor: pointer;
+  }
+  .detail-card .status-badge {
+    display: inline-block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 10px; font-weight: 700; color: #fff; margin-bottom: 10px;
+  }
+  .detail-card .status-badge.not-started { background: #e0e4e8; color: #445566; }
+  .detail-card .status-badge.in-progress { background: #2196F3; }
+  .detail-card .status-badge.at-risk { background: #ff9800; }
+  .detail-card .status-badge.delayed { background: #f44336; }
+  .detail-card .status-badge.complete { background: #4caf50; }
+  .detail-card .detail-name { font-size: 18px; font-weight: 700; color: var(--primary); }
+  .detail-card a.detail-name { color: var(--primary); text-decoration: none; border-bottom: 1px dashed var(--primary); cursor: pointer; }
+  .detail-card a.detail-name:hover { color: #2196F3; border-bottom-color: #2196F3; }
+  .detail-card .detail-meta { margin-top: 12px; font-size: 13px; }
+  .detail-card .detail-row { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f0f2f4; }
+  .detail-card .detail-row:last-child { border-bottom: none; }
+  .detail-card .detail-label { color: #6b7a8a; min-width: 80px; font-size: 12px; }
+  .detail-card .detail-value { color: #2a3544; }
+  .detail-card .detail-link { color: #2196F3; text-decoration: none; }
+  .detail-card .detail-link:hover { text-decoration: underline; }
+
+  .footer { text-align: center; padding: 20px; color: #99aabb; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<script>
+// ============================================================
+// SETTINGS (server-provided via Apps Script)
+// ============================================================
+
+const FALLBACK_SETTINGS = {
+  program_name: 'Floyd KC Data Center Development Program',
+  client_name: 'Beale Infrastructure',
+  client_logo_url: '',
+  pgcis_logo_url: 'https://lh3.googleusercontent.com/d/1SvJPW5By4yRtWjnfirQbBrWUCk4noo2c',
+  primary_color: '#1a2332',
+  accent_color: '#BCF100',
+  secondary_color: '#2c3e50',
+  pgcis_color: '#2e7d32',
+  footer_text: 'Beale Infrastructure + PACHYDERM GLOBAL Critical Infrastructure Services',
+  confidentiality_notice: 'Confidential - For authorized personnel only',
+  client_logo_invert: 'true'
+};
+
+let settings;
+try {
+  settings = <?!= settings ?>;
+  if (!settings || !settings.program_name) settings = FALLBACK_SETTINGS;
+} catch(e) {
+  settings = FALLBACK_SETTINGS;
+}
+
+const currentPage = '<?!= currentPage ?>';
+
+// Apply CSS custom properties from settings
+document.documentElement.style.setProperty('--primary', settings.primary_color || '#1a2332');
+document.documentElement.style.setProperty('--accent', settings.accent_color || '#BCF100');
+document.documentElement.style.setProperty('--secondary', settings.secondary_color || '#2c3e50');
+document.documentElement.style.setProperty('--pgcis', settings.pgcis_color || '#2e7d32');
+
+// ===== DATA =====
+let scheduleData;
+try {
+  scheduleData = <?!= pageData ?>;
+} catch(e) {
+  scheduleData = null;
+}
+
+const FALLBACK_PGCIS = [
+  { Name: 'Beale QCx Specification', Owner: 'Tyler Dunlap', Workstream: 'QCx Program Development', Phase: 'Phase 1', Start: '2026-04-22', End: '2026-07-15', Status: 'In Progress', Progress: '25', Notes: 'Draft v1.0 delivered Apr 29. Awaiting Beale feedback from Matt S. and Alfonso P.', 'Doc Link': '', '#': '1' },
+  { Name: 'Spec/BOD QC Review Comments', Owner: 'Tarif Abboushi PE', Workstream: 'Electrical Engineering QC', Phase: 'Phase 1', Start: '2026-05-01', End: '2026-07-31', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '2' },
+  { Name: 'SPOF Analysis Report', Owner: 'Tarif Abboushi PE', Workstream: 'Electrical Engineering QC', Phase: 'Phase 1', Start: '2026-06-01', End: '2026-08-15', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '3' },
+  { Name: 'Contract Review Memoranda', Owner: 'Jim Doucette', Workstream: 'GC Contract & Schedule Oversight', Phase: 'Phase 1', Start: '2026-04-28', End: '2026-06-30', Status: 'In Progress', Progress: '10', Notes: 'Initial GC contract language under review', 'Doc Link': '', '#': '4' },
+  { Name: 'Cx Schedule & Resource Plan', Owner: 'Jim Doucette', Workstream: 'Schedule & Logistics Management', Phase: 'Phase 1', Start: '2026-06-01', End: '2026-08-15', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '5' },
+  { Name: 'Load Bank Strategy Memo', Owner: 'Jim Doucette', Workstream: 'Schedule & Logistics Management', Phase: 'Phase 1', Start: '2026-07-01', End: '2026-08-31', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '6' },
+  { Name: 'Cx Platform Configuration', Owner: 'Benton Peret', Workstream: 'Document Control & Reporting', Phase: 'Phase 1', Start: '2026-05-01', End: '2026-08-31', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '7' },
+  { Name: 'Reporting Templates & KPIs', Owner: 'Benton Peret', Workstream: 'Document Control & Reporting', Phase: 'Phase 1', Start: '2026-06-15', End: '2026-09-15', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '8' },
+  { Name: 'Procedure/Checklist Library (L1-L6)', Owner: 'Tyler Dunlap', Workstream: 'QCx Program Development', Phase: 'Phase 1', Start: '2026-07-01', End: '2026-11-30', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '9' },
+  { Name: 'Equipment Labeling, QR & Cx Tagging Standard', Owner: 'Tyler Dunlap', Workstream: 'QCx Program Development', Phase: 'Phase 1', Start: '2026-06-15', End: '2026-09-30', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '10' },
+  { Name: 'Deficiency Management System', Owner: 'Benton Peret', Workstream: 'QCx Program Development', Phase: 'Phase 1', Start: '2026-07-01', End: '2026-10-15', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '11' },
+  { Name: 'Commissioning Plan Template', Owner: 'Tyler Dunlap', Workstream: 'QCx Program Development', Phase: 'Phase 1', Start: '2026-08-01', End: '2026-10-31', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '12' },
+  { Name: 'Quality Program Workshop Materials', Owner: 'Tyler Dunlap', Workstream: 'QCx Program Development', Phase: 'Phase 1', Start: '2026-09-01', End: '2026-11-15', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '13' },
+  { Name: 'Digital Twin & Thermodynamic Model', Owner: 'Mohamed Ben-Salah', Workstream: 'Mechanical Engineering', Phase: 'Phase 1', Start: '2026-08-01', End: '2027-01-31', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '14' },
+  { Name: 'Safety Program Alignment Review', Owner: 'Muhammed Kurt', Workstream: 'Safety / EHS', Phase: 'Phase 1', Start: '2026-06-01', End: '2026-08-31', Status: 'Not Started', Progress: '0', Notes: '', 'Doc Link': '', '#': '15' }
+];
+
+const FALLBACK_CONSTRUCTION = [
+  { Name: '30% Design Review', Owner: 'Alfonso Portillo', Start: '2026-04-15', End: '2026-06-15', Status: 'In Progress', Progress: '30', Notes: 'Currently under review', '#': '1' },
+  { Name: '60% Design Review', Owner: 'Alfonso Portillo', Start: '2026-07-01', End: '2026-09-15', Status: 'Not Started', Progress: '0', Notes: '', '#': '2' },
+  { Name: '90% Design / IFC Documents', Owner: 'Kevin Klucsarits', Start: '2026-10-01', End: '2026-12-31', Status: 'Not Started', Progress: '0', Notes: '', '#': '3' },
+  { Name: 'GC Mobilization', Owner: 'Matt Striffler', Start: '2027-01-15', End: '2027-03-15', Status: 'Not Started', Progress: '0', Notes: '', '#': '4' },
+  { Name: 'Building 1 Construction', Owner: 'Matt Striffler', Start: '2027-02-01', End: '2027-08-31', Status: 'Not Started', Progress: '0', Notes: '2-block building', '#': '5' },
+  { Name: 'Building 2 Construction', Owner: 'Matt Striffler', Start: '2027-03-01', End: '2027-10-15', Status: 'Not Started', Progress: '0', Notes: '6-block building', '#': '6' },
+  { Name: 'L1-L3 Commissioning', Owner: 'PGCIS Team', Start: '2027-06-01', End: '2027-09-15', Status: 'Not Started', Progress: '0', Notes: 'L1 factory, L2 pre-startup, L3 energization', '#': '7' },
+  { Name: 'L4-L5 Integrated Testing', Owner: 'PGCIS Team', Start: '2027-08-01', End: '2027-10-31', Status: 'Not Started', Progress: '0', Notes: 'Functional performance + integrated systems', '#': '8' },
+  { Name: 'L6 Handover & Delivery', Owner: 'Matt Striffler', Start: '2027-10-01', End: '2027-11-09', Status: 'Not Started', Progress: '0', Notes: 'First delivery target: Nov 9, 2027', '#': '9' }
+];
+
+// Normalize Sheet column names (lowercase/underscored) to renderer property names (capitalized)
+function normalizeRow(row) {
+  return {
+    Name: row.Name || row.name || '',
+    Owner: row.Owner || row.owner || '',
+    Workstream: row.Workstream || row.workstream || '',
+    Phase: row.Phase || row.phase || '',
+    Start: row.Start || row.start_date || '',
+    End: row.End || row.end_date || '',
+    Status: row.Status || row.status || 'Not Started',
+    Progress: row.Progress || row.progress || '0',
+    Notes: row.Notes || row.notes || '',
+    'Doc Link': row['Doc Link'] || row.document_url || '',
+    '#': row['#'] || row.order || '0'
+  };
+}
+
+const rawPgcis = (scheduleData && scheduleData.pgcisSchedule && scheduleData.pgcisSchedule.length > 0)
+  ? scheduleData.pgcisSchedule : FALLBACK_PGCIS;
+const rawConstruction = (scheduleData && scheduleData.constructionSchedule && scheduleData.constructionSchedule.length > 0)
+  ? scheduleData.constructionSchedule : FALLBACK_CONSTRUCTION;
+const pgcisRows = rawPgcis.map(normalizeRow);
+const constructionRows = rawConstruction.map(normalizeRow);
+
+// ===== VIEW RANGES =====
+const VIEW_RANGES = {
+  'Full Program': { start: '2026-04-01', end: '2027-12-31' },
+  'Q2 2026': { start: '2026-04-01', end: '2026-06-30' },
+  'Q3 2026': { start: '2026-07-01', end: '2026-09-30' },
+  'Q4 2026': { start: '2026-10-01', end: '2026-12-31' },
+  'Q1 2027': { start: '2027-01-01', end: '2027-03-31' },
+  'Q2 2027': { start: '2027-04-01', end: '2027-06-30' },
+  'Q3 2027': { start: '2027-07-01', end: '2027-09-30' },
+  'Q4 2027': { start: '2027-10-01', end: '2027-12-31' }
+};
+
+let currentView = 'Full Program';
+
+// ===== UTILITIES =====
+function parseDate(s) {
+  if (!s) return null;
+  const parts = s.split('-');
+  return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+}
+
+function formatDateDisplay(s) {
+  if (!s) return '';
+  const d = parseDate(s);
+  if (!d) return s;
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
+
+function statusClass(status) {
+  if (!status) return 'not-started';
+  const s = status.toLowerCase().trim();
+  if (s === 'in progress') return 'in-progress';
+  if (s === 'at risk') return 'at-risk';
+  if (s === 'delayed') return 'delayed';
+  if (s === 'complete') return 'complete';
+  return 'not-started';
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function getMonthsBetween(startStr, endStr) {
+  const start = parseDate(startStr);
+  const end = parseDate(endStr);
+  const months = [];
+  const current = new Date(start.getFullYear(), start.getMonth(), 1);
+  while (current <= end) {
+    months.push(new Date(current));
+    current.setMonth(current.getMonth() + 1);
+  }
+  return months;
+}
+
+function getMonthLabel(d) {
+  const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const label = monthNames[d.getMonth()];
+  // Show year suffix on Jan or first month of view
+  if (d.getMonth() === 0 || d.getMonth() === 3) {
+    return label + ' ' + String(d.getFullYear()).slice(2);
+  }
+  return label;
+}
+
+function getBarPosition(itemStart, itemEnd, viewStart, viewEnd) {
+  const vs = parseDate(viewStart).getTime();
+  const ve = parseDate(viewEnd).getTime();
+  const is = parseDate(itemStart).getTime();
+  const ie = parseDate(itemEnd).getTime();
+  const totalRange = ve - vs;
+  if (totalRange <= 0) return null;
+
+  const leftPct = Math.max(0, (is - vs) / totalRange * 100);
+  const rightPct = Math.min(100, (ie - vs) / totalRange * 100);
+  const widthPct = rightPct - leftPct;
+
+  if (widthPct <= 0 || leftPct >= 100 || rightPct <= 0) return null;
+  return { left: leftPct, width: widthPct };
+}
+
+function getTodayPosition(viewStart, viewEnd) {
+  const vs = parseDate(viewStart).getTime();
+  const ve = parseDate(viewEnd).getTime();
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const totalRange = ve - vs;
+  if (totalRange <= 0) return null;
+  const pct = (today - vs) / totalRange * 100;
+  if (pct < 0 || pct > 100) return null;
+  return pct;
+}
+
+function computeSectionStats(rows) {
+  let complete = 0, atRisk = 0, delayed = 0;
+  rows.forEach(r => {
+    const s = (r.Status || '').toLowerCase().trim();
+    if (s === 'complete') complete++;
+    if (s === 'at risk') atRisk++;
+    if (s === 'delayed') delayed++;
+  });
+  const parts = [];
+  parts.push(complete + ' of ' + rows.length + ' complete');
+  if (atRisk > 0) parts.push(atRisk + ' at risk');
+  if (delayed > 0) parts.push(delayed + ' delayed');
+  return parts.join(' | ');
+}
+
+// ===== HEADER =====
+
+function isEmbeddedInGoogleSites() {
+  const referrer = document.referrer || '';
+  const ancestorOrigins = window.location.ancestorOrigins
+    ? Array.from(window.location.ancestorOrigins)
+    : [];
+
+  return referrer.indexOf('sites.google.com') !== -1 ||
+    ancestorOrigins.some(origin => origin.indexOf('sites.google.com') !== -1);
+}
+
+function renderPageNav() {
+  return '';
+}
+
+function shouldPreserveClientLogoAccent() {
+  const clientName = (settings.client_name || '').toLowerCase();
+  return settings.client_logo_invert === 'true' && clientName.indexOf('beale') !== -1;
+}
+
+function renderClientLogo() {
+  if (!settings.client_logo_url) {
+    return `<div style="color:#fff;font-size:18px;font-weight:700;">${settings.client_name}</div>`;
+  }
+
+  if (shouldPreserveClientLogoAccent()) {
+    return `
+      <span class="client-logo-wrap" aria-label="${settings.client_name}">
+        <img src="${settings.client_logo_url}" alt="" class="client-logo-img inverted">
+        <svg class="client-logo-accent" viewBox="0 0 232 85" aria-hidden="true" focusable="false">
+          <path d="M227.684 0L194.127 33.5992H146.621V38.618H192.639V84.6367H197.658V37.1292L231.257 3.53005L227.684 0Z" fill="#BCF100"/>
+        </svg>
+      </span>`;
+  }
+
+  const logoFilter = settings.client_logo_invert === 'true' ? 'filter:brightness(0) invert(1);' : '';
+  return `<img src="${settings.client_logo_url}" alt="${settings.client_name}" style="height:55px;${logoFilter}">`;
+}
+
+function renderHeader() {
+  return '';
+}
+
+function renderFooter() {
+  return `<div class="footer">
+    Floyd KC Program | ${settings.footer_text}<br>
+    <span style="font-size:10px;color:#bbb;">${settings.confidentiality_notice}</span>
+  </div>`;
+}
+
+// ===== RENDERING =====
+function renderControls() {
+  const viewNames = Object.keys(VIEW_RANGES);
+  const btns = viewNames.map(name =>
+    `<div class="view-btn ${name === currentView ? 'active' : ''}" onclick="switchView('${name}')">${name}</div>`
+  ).join('');
+
+  return `
+    <div class="controls">
+      <div class="view-toggle">${btns}</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot not-started"></div> Not Started</div>
+        <div class="legend-item"><div class="legend-dot in-progress"></div> In Progress</div>
+        <div class="legend-item"><div class="legend-dot at-risk"></div> At Risk</div>
+        <div class="legend-item"><div class="legend-dot delayed"></div> Delayed</div>
+        <div class="legend-item"><div class="legend-dot complete"></div> Complete</div>
+      </div>
+    </div>`;
+}
+
+function renderTimelineHeader(label) {
+  const range = VIEW_RANGES[currentView];
+  const months = getMonthsBetween(range.start, range.end);
+  const now = new Date();
+  const currentMonth = now.getFullYear() * 12 + now.getMonth();
+
+  const monthCells = months.map(m => {
+    const mKey = m.getFullYear() * 12 + m.getMonth();
+    const isCurrent = mKey === currentMonth;
+    return `<div class="timeline-month ${isCurrent ? 'current' : ''}">${getMonthLabel(m)}</div>`;
+  }).join('');
+
+  return `
+    <div class="timeline-header">
+      <div class="timeline-label">${label}</div>
+      <div class="timeline-months">${monthCells}</div>
+    </div>`;
+}
+
+function renderTodayMarker(showLabel) {
+  const range = VIEW_RANGES[currentView];
+  const pct = getTodayPosition(range.start, range.end);
+  if (pct === null) return '';
+  const labelHtml = showLabel ? `<div class="today-label">Today</div>` : '';
+  return `<div class="today-marker" style="left:${pct.toFixed(2)}%;">${labelHtml}</div>`;
+}
+
+function renderGanttRow(item, index, type) {
+  const range = VIEW_RANGES[currentView];
+  const pos = getBarPosition(item.Start, item.End, range.start, range.end);
+  const sc = statusClass(item.Status);
+  const hasNote = item.Notes && item.Notes.trim().length > 0;
+  const progress = parseInt(item.Progress) || 0;
+  const barLabel = item.Name && pos && pos.width > 8 ? escapeHtml(item.Name) : '';
+
+  let barHtml = '';
+  if (pos) {
+    const progressBar = progress > 0 ? `<div class="gantt-bar-progress" style="width:${progress}%;"></div>` : '';
+    barHtml = `<div class="gantt-bar ${sc} ${hasNote ? 'has-note' : ''}"
+      style="left:${pos.left.toFixed(2)}%; width:${pos.width.toFixed(2)}%;"
+      onclick="showDetail('${type}', ${index}); event.stopPropagation();">
+      ${progressBar}
+      <span style="position:relative;z-index:1;">${barLabel}</span>
+    </div>`;
+  }
+
+  // Show today marker only on first row of each section
+  const todayHtml = index === 0 ? renderTodayMarker(type === 'pgcis') : renderTodayMarker(false);
+
+  return `
+    <div class="gantt-row" onclick="showDetail('${type}', ${index})">
+      <div class="gantt-label">
+        <div>${escapeHtml(item.Name)}<br><span class="owner">${escapeHtml(item.Owner)}</span></div>
+      </div>
+      <div class="gantt-bars">
+        ${todayHtml}
+        ${barHtml}
+      </div>
+    </div>`;
+}
+
+function renderGanttSection(title, rows, type, labelCol) {
+  const stats = computeSectionStats(rows);
+  const rowsHtml = rows.map((r, i) => renderGanttRow(r, i, type)).join('');
+
+  return `
+    <div class="gantt-section">
+      <div class="gantt-section-header">
+        ${escapeHtml(title)}
+        <span class="gantt-section-count">${stats}</span>
+      </div>
+      ${renderTimelineHeader(labelCol)}
+      ${rowsHtml}
+    </div>`;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    ${renderHeader()}
+    <div class="container">
+      ${renderControls()}
+      ${renderGanttSection('PGCIS Deliverables', pgcisRows, 'pgcis', 'Deliverable')}
+      ${renderGanttSection('Construction Schedule', constructionRows, 'construction', 'Milestone')}
+    </div>
+    ${renderFooter()}`;
+}
+
+// ===== VIEW SWITCHING =====
+function switchView(viewName) {
+  currentView = viewName;
+  render();
+}
+window.switchView = switchView;
+
+// ===== DETAIL POPUP =====
+function showDetail(type, index) {
+  const rows = type === 'pgcis' ? pgcisRows : constructionRows;
+  const item = rows[index];
+  if (!item) return;
+
+  const sc = statusClass(item.Status);
+  const statusLabel = item.Status || 'Not Started';
+  const progress = parseInt(item.Progress) || 0;
+
+  let metaRows = '';
+  metaRows += `<div class="detail-row"><div class="detail-label">Owner</div><div class="detail-value">${escapeHtml(item.Owner)}</div></div>`;
+
+  if (type === 'pgcis' && item.Workstream) {
+    metaRows += `<div class="detail-row"><div class="detail-label">Workstream</div><div class="detail-value">${escapeHtml(item.Workstream)}</div></div>`;
+  }
+  if (type === 'pgcis' && item.Phase) {
+    metaRows += `<div class="detail-row"><div class="detail-label">Phase</div><div class="detail-value">${escapeHtml(item.Phase)}</div></div>`;
+  }
+
+  metaRows += `<div class="detail-row"><div class="detail-label">Start</div><div class="detail-value">${formatDateDisplay(item.Start)}</div></div>`;
+  metaRows += `<div class="detail-row"><div class="detail-label">Target</div><div class="detail-value">${formatDateDisplay(item.End)}</div></div>`;
+  metaRows += `<div class="detail-row"><div class="detail-label">Progress</div><div class="detail-value">${progress}%</div></div>`;
+
+  if (item.Notes && item.Notes.trim()) {
+    metaRows += `<div class="detail-row"><div class="detail-label">Notes</div><div class="detail-value">${escapeHtml(item.Notes)}</div></div>`;
+  }
+
+  const docLink = (item['Doc Link'] || '').trim();
+  const titleHtml = docLink
+    ? `<a href="${escapeHtml(docLink)}" target="_blank" rel="noopener" class="detail-name" title="Open deliverable folder in Google Drive">${escapeHtml(item.Name)}</a>`
+    : `<div class="detail-name">${escapeHtml(item.Name)}</div>`;
+
+  const html = `
+    <div class="detail-overlay" onclick="if(event.target===this)this.remove()">
+      <div class="detail-card">
+        <button class="close-btn" onclick="this.closest('.detail-overlay').remove()">&times;</button>
+        <div class="status-badge ${sc}">${escapeHtml(statusLabel)}</div>
+        ${titleHtml}
+        <div class="detail-meta">${metaRows}</div>
+      </div>
+    </div>`;
+
+  // Remove any existing overlay
+  const existing = document.querySelector('.detail-overlay');
+  if (existing) existing.remove();
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+window.showDetail = showDetail;
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function() {
+  render();
+});
+</script>
+
+<div id="app"></div>
+
+</body>
+</html>
